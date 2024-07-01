@@ -1,0 +1,84 @@
+{% extends 'base-air-pollutants.html' %}
+
+{% block title %}Air Pollutants - Human Digital Twin | TwinAIR{% endblock %}
+
+{% block content %}
+<div class="page">
+    <!-- Page header -->
+    <div class="page-header d-print-none" id="breadcrumb">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <div class="page-pretitle">
+                        Indoor Air Pollutants
+                    </div>
+                    <h2 class="page-title">
+                        All pollutants
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page body -->
+    <div class="page-body" id="chart">
+        <div class="container-xl">
+            <div class="row row-cards row-deck">
+                <div class="col-md-2 col-lg-2">
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 class="card-title">
+                                PM1.0
+                                <a href="page1.html" class="arrow-link" style="margin-left: 10px;">
+                                    <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </h3>
+                            <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2 col-lg-2">
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 class="card-title">
+                                PM2.5
+                                <a href="page2.html" class="arrow-link" style="margin-left: 10px;">
+                                    <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2 col-lg-2">
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 class="card-title">
+                                PM5.0
+                                <a href="page3.html" class="arrow-link" style="margin-left: 10px;">
+                                    <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2 col-lg-2">
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 class="card-title">
+                                PM10
+                                <a href="page4.html" class="arrow-link" style="margin-left: 10px;">
+                                    <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-lg-4 mt-5">
+                    <h1>Particle Matters</h1><br>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

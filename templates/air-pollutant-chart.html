@@ -1,0 +1,75 @@
+<form id="sensor-data-form">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="mb-3">
+                <label class="form-label required">Select a date range</label>
+                <input type="text" class="form-control" id="date-picker" placeholder="Select a date range">
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="mb-3">
+                <label class="form-label required">Sensor Type</label>
+                <select class="form-control" id="sensor-type">
+                    <option value="hwsensors">Hardware Sensors</option>
+                    <option value="wsensors">Wearable Sensors</option>
+                    <option value="vsensors">Virtual Sensors</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="mb-3">
+                <label class="form-label required">Aggregation method</label>
+                <select class="form-control" id="aggregation-method">
+                    <option value="min">Minimum</option>
+                    <option value="max">Maximum</option>
+                    <option value="count">Count</option>
+                    <option value="sum">Sum</option>
+                    <option value="avg">Average</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="mb-3">
+                <label class="form-label required">Aggregation period</label>
+                <select class="form-control" id="aggregation-period">
+                    <option value="hour">Hour</option>
+                    <option value="minute">Minute</option>
+                    <option value="month">Month</option>
+                    <option value="day">Day</option>
+                    <option value="second">Second</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="mb-3">
+                <label class="form-label required">Limit</label>
+                <select class="form-control" id="limit">
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                    <option value="200">200</option>
+                    <option value="500">500</option>
+                    <option value="1000">1000</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-1 mt-4">
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+        </div>
+    </div>
+</form>
+
+<div class="row mt-4">
+    <div id="chart-container">
+        <div class="jumbotron jumbotron-fluid" id="waiting-message">
+            <div class="container text-center pt-6">
+                <h1 class="text-center">Enter your desired parameters of querying data.</h1>
+                <p class="lead pt-4"><code>aggregation method</code> is a modified jumbotron that occupies the entire horizontal space of its parent.</p>
+                <p class="lead"><code>aggregation period</code> specifies the .</p>
+                <p class="lead"><code>limit</code> is a modified jumbotron that occupies the entire horizontal space of its parent.</p>
+            </div>
+        </div>
+        <div id="air-pollutants-chart" data-pollutant="{{ pollutant }}" data-unit="{{ unit }}" style="display: none;"></div>
+    </div>
+</div>

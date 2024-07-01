@@ -1,0 +1,32 @@
+{% extends 'base-air-pollutants.html' %}
+
+{% block title %}{{ pollutant | upper }} - Human Digital Twin | TwinAIR{% endblock %}
+
+{% block content %}
+<div class="page">
+    <!-- Page header -->
+    <div class="page-header d-print-none" id="breadcrumb">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <!-- Page pre-title -->
+                    <div class="page-pretitle">
+                        Historical Data of Air Pollutants
+                    </div>
+                    <h2 class="page-title">
+                      Indoor {{ pollutant | upper }}
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page body -->
+    <div class="page-body" id="chart">
+        <div class="container-xl">
+            {% include 'air-pollutant-chart.html' %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

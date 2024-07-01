@@ -1,0 +1,14 @@
+{% macro jumbotron(title, subtitle) %}
+<div class="jumbotron jumbotron-fluid pt-4 pb-4 hidden-at-start">
+    <div class="container">
+        <h1 class="text-center mb-4">{{ title }}</h1>
+        <p class="lead text-center">{{ subtitle }}</p>
+    </div>
+</div>
+{% endmacro %}
+
+{% macro dropdown_with_id(dropdown_id) %}
+    {% set dropdown_id = dropdown_id %}
+    {% include 'index-dropdown-date.html' %}
+{% endmacro %}
+

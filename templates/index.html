@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block additional_css %}
+    <!-- Any additional CSS specific to the index page can go here -->
+{% endblock %}
+
+{% block content %}
+<div class="page">
+    <!-- Page header -->
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <!-- Page pre-title -->
+                    <div class="page-pretitle">
+                        Overview
+                    </div>
+                    <h2 class="page-title">
+                        Dashboard
+                    </h2>
+                </div>
+                <div class="col-auto ms-auto">
+                    <!-- Update time -->
+                    <div class="page-update-time">
+                        Last updated: <span id="updateTime">March 10, 2024, 10:00 AM</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page body -->
+    <div class="page-body">
+        <div class="container-xl">
+            {% include 'index-card-health-recommendations.html' %}
+        </div>
+    </div>
+
+    {% import 'index-macros.html' as macros %}
+
+    {{ macros.jumbotron('Indoor Air Pollutants', 'Track the measurements of indoor PMs, VOCs and NOx that captured in your indoor environment during the last 24-hours. ' ) }}
+
+    <div class="page-body">
+        <div class="container-xl">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div id="hourly-air-pollutants-pm"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container-xl">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div id="hourly-air-pollutants-nox"></div>
+                </div>
+                <div class="col-lg-6">
+                    <div id="hourly-air-pollutants-vocs"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+
+{% endblock %}

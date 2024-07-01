@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{% block title %}Human Digital Twin | TwinAIR{% endblock %}</title>
+    <!-- Common CSS files -->
+    <link href="{{ url_for('static', filename='css/tabler.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/tabler-vendors.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/demo.min.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="{{ url_for('static', filename='css/twinair.css') }}" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+        <style>
+        .navbar-brand {
+            position: relative;
+            display: inline-block;
+            z-index: 2;
+            overflow: hidden;
+        }
+
+        .navbar-brand::after {
+            content: '';
+            position: absolute;
+            height: 5px;
+            background-color: #B7C9F2;
+            width: 100%;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%) scaleX(0);
+            transform-origin: center;
+            transition: transform 0.1s ease-in-out;
+            z-index: -1;
+        }
+
+.navbar-brand:hover::after {
+    transform: translateX(-50%) scaleX(1);
+}
+    </style>
+
+    {% block additional_css %}{% endblock %}
+</head>
+<body>
+    {% block body %}
+        <div class="page">
+            <!-- Common header -->
+            {% include '_header.html' %}
+            <!-- Common navbar -->
+            {% include '_navbar.html' %}
+
+            <div class="page-wrapper">
+                {% block content %}
+                    <!-- Page specific content goes here -->
+                {% endblock %}
+            </div>
+
+            {% include '_footer.html' %}
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+        <script src="{{ url_for('static', filename='js/demo-theme.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/demo.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/apex-chart-styles.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/air-pollutants-chart.js') }}"></script>
+
+    {% endblock %}
+</body>
+</html>

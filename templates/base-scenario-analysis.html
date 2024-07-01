@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{% block title %}Human Digital Twin | TwinAIR{% endblock %}</title>
+    <!-- Common CSS files -->
+    <link href="{{ url_for('static', filename='css/tabler.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/tabler-vendors.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/demo.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/twinair.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/ion.rangeSlider.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/custom-slider.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/fontawesome.all.min.css') }}" rel="stylesheet">
+    <!-- jQuery -->
+    <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+    <!-- Ion.RangeSlider JS -->
+    <script src="{{ url_for('static', filename='js/ion.rangeSlider.min.js') }}"></script>
+    <script src="https://cdn.plot.ly/plotly-2.29.1.min.js" charset="utf-8"></script>
+
+    {% block additional_css %}{% endblock %}
+</head>
+<body>
+    {% block body %}
+        <div class="page">
+            <!-- Common header -->
+            {% include '_header.html' %}
+            <!-- Common navbar -->
+            {% include '_navbar.html' %}
+
+            <div class="page-wrapper">
+                {% block content %}
+                    <!-- Page specific content goes here -->
+                {% endblock %}
+            </div>
+
+            {% include '_footer.html' %}
+        </div>
+
+        <script src="{{ url_for('static', filename='js/demo-theme.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/demo.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/custom-scenario-analysis-inputs.js') }}"></script>
+        {% block additional_js %}
+        <!-- Page specific JavaScript files can be included here -->
+        {% endblock %}
+    {% endblock %}
+</body>
+</html>

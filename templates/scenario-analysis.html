@@ -1,0 +1,41 @@
+{% extends 'base-scenario-analysis.html' %}
+
+{% block title %}Scenario Analysis - Human Digital Twin | TwinAIR{% endblock %}
+
+{% block additional_css %}
+    <!-- Any additional CSS specific to the index page can go here -->
+{% endblock %}
+
+{% block content %}
+<div class="page">
+    <!-- Page header -->
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <!-- Page pre-title -->
+                    <div class="page-pretitle">
+                        Overview
+                    </div>
+                    <h2 class="page-title">
+                        Scenario Analysis
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Input section for scenario analysis -->
+    <div class="page-body">
+        <div class="container-xl pt-2">
+          {% include 'scenario-analysis-inputs.html' %}
+        </div>
+        <div class="container-xl">
+            <div class="row">
+                <div id="pollutantChart" class="pt-4 pb-4" style="width:100vw;height:100vh;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

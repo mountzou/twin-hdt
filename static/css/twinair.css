@@ -1,0 +1,93 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap');
+
+:root {
+    --tblr-font-weight-medium: 600;
+    --tblr-font-weight-regular: 500;
+    --tblr-font-weight-light: 400;
+}
+
+body {
+    font-family: "Nunito Sans", sans-serif;
+}
+
+h1 {
+    font-weight: var(--tblr-font-weight-medium);
+    font-size: 48px;
+    letter-spacing: -1.2px;
+}
+
+.btn {
+    font-family: "Nunito Sans", sans-serif;
+}
+
+.card {
+    border: none;
+    border-radius: 10px;
+}
+
+.card-title {
+    font-weight: var(--tblr-font-weight-medium);
+}
+
+.card-footer {
+    --tblr-card-border-width: 2px;
+    --tblr-card-border-color: #f6f8fb;
+    border-top: var(--tblr-card-border-width) solid var(--tblr-card-border-color);
+}
+
+.navbar {
+    --tblr-navbar-bg: white;
+    --tblr-navbar-border-width: 2px;
+    --tblr-navbar-color: black;
+    --tblr-navbar-border-color: #f6f8fb;
+
+    font-weight: 700;
+}
+
+.navbar-header {
+    min-height: 4.5rem;
+    border-color: #206bc4;
+}
+
+.nav-link-title {
+    font-weight: 500;
+}
+
+.page-update-time {
+    font-weight: 600;
+}
+
+.article-card {
+    border-left: 4px solid #206bc4; /* Blue color; adjust as needed */
+    border-radius: 0.25rem; /* Bootstrap's default border-radius for rounded corners */
+}
+
+.article-cards-percentage {
+    font-weight: 900;
+    color: #206bc4;
+}
+
+.nav-link-icon {
+    color: black;
+    margin-right: 8px;
+    font-size: 14px;
+}
+
+.navbar-nav .nav-item {
+    display: flex;
+    align-items: center;
+}
+
+.lead {
+    font-size: .975rem;
+}
+
+.mt-4 {
+    margin-top: 1.7rem !important;
+}
+
+.apexcharts-tooltip {
+    background: rgba(0, 0, 0, 0.12) !important; /* 20% opacity black background */
+    color: #2F3645 !important;
+    border: none !important; /* Ensure the border is removed */
+}

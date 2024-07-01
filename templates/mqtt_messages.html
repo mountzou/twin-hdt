@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>MQTT Messages</title>
+    <link href="{{ url_for('static', filename='css/tabler.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/twinair.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+</head>
+<body>
+    <div class="page">
+        <!-- Common header -->
+        {% include '_header.html' %}
+        <!-- Common navbar -->
+        {% include '_navbar.html' %}
+
+        <div class="page-wrapper">
+
+            <div class="container-xl pt-4">
+
+                <div class="row">
+                    <div class="col-md-6">
+                         <div id="airTemperatureChart"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <div id="relativeHumidityChart"></div>
+                    </div>
+                </div>
+
+                <div id="co2Chart"></div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div id="pm1Chart"></div>
+                    </div>
+                    <div class="col-md-4">
+                        <div id="pm25Chart"></div>
+                    </div>
+                    <div class="col-md-4">
+                        <div id="pm10Chart"></div>
+                    </div>
+                </div>
+
+                <ul id="messages">
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+
+            </div>
+
+        </div>
+
+        {% include '_footer.html' %}
+
+        <script src="{{ url_for('static', filename='js/apex-chart-styles.js') }}"></script>
+
+        <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+
+        <script type="text/javascript">
+        // Initialize SocketIO
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        const params = {
+            'sensor_id': 'urn:ngsi-ld:hwsensors:16869',
+            'type': 'hwsensors',
+            'fromDate': '2024-06-01T12:00:00',
+            'toDate': '2024-06-01T12:43:00',
+            'limit': 200,
+            'attrs': 'airTemperature',
+            'aggrPeriod': 'hour',
+            'aggrMethod': 'min',
+        };
+
+        $.ajax({
+            url: '/get_pollutants_historical_data',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(params),
+            success: function(response) {
+                console.log('Response:', response);
+
+                const times = response.index.map(timestamp => {
+                    return new Date(timestamp).getTime();
+                });
+                const values = response.attributes[0].values;
+
+                console.log('Times:', times);
+                console.log('Values:', values);
+            },
+            error: function(error) {
+                console.error('Error:', error);
+            }
+        });
+
+        // Function to parse message and extract data
+        function parseMessage(message) {
+            try {
+                var jsonString = message.substring(message.indexOf('{'));
+                var payload = JSON.parse(jsonString);
+
+                if (payload) {
+                    var airTemperature = payload.airTemperature;
+                    var relativeHumidity = payload.relativeHumidity;
+                    var co2 = payload.co2;
+                    var pm1 = payload.pm1;
+                    var pm25 = payload.pm25;
+                    var pm10 = payload.pm10;
+                    var observationDateTime = new Date(payload.observationDateTime);
+                    return {
+                        airTemperature: {
+                            x: observationDateTime,
+                            y: airTemperature
+                        },
+                        relativeHumidity: {
+                            x: observationDateTime,
+                            y: relativeHumidity
+                        },
+                        co2: {
+                            x: observationDateTime,
+                            y: co2
+                        },
+                        pm1: {
+                            x: observationDateTime,
+                            y: pm1
+                        },
+                        pm25: {
+                            x: observationDateTime,
+                            y: pm25
+                        },
+                        pm10: {
+                            x: observationDateTime,
+                            y: pm10
+                        }
+                    };
+                } else {
+                    console.error('Invalid payload structure', payload);
+                    return null;
+                }
+            } catch (e) {
+                console.error('Failed to parse message', message, e);
+                return null;
+            }
+        }
+
+        // Initialize the air temperature chart
+        var airTemperatureOptions = {
+        chart: {
+            type: 'line',
+            height: 450,
+            animations: {
+                enabled: false,
+            },
+            toolbar: styleToolbar,
+        },
+            series: [{
+                name: 'Air Temperature',
+                data: []
+            }],
+            xaxis: {
+                type: 'datetime',
+                title: {
+                    text: 'Time',
+                    style: styleAxis
+                }
+            },
+            yaxis: {
+                title: {
+                    text: 'Air Temperature (°C)',
+                    style: styleAxis
+                }
+            },
+            stroke: {
+                curve: 'smooth',
+                width: 2,
+                dashArray: 10,
+                lineCap: 10,
+            },
+            markers: {
+                size: 2
+            },
+        };
+
+        var airTemperatureChart = new ApexCharts(document.querySelector("#airTemperatureChart"), airTemperatureOptions);
+        airTemperatureChart.render();
+
+        // Initialize the relative humidity chart
+        var relativeHumidityOptions = {
+        chart: {
+            type: 'line',
+            height: 450,
+            animations: {
+                enabled: false,
+            },
+            toolbar: styleToolbar,
+        },
+            series: [{
+                name: 'Relative Humidity',
+                data: []
+            }],
+            xaxis: {
+                type: 'datetime',
+                title: {
+                    text: 'Time',
+                    style: styleAxis
+                }
+            },
+            yaxis: {
+                title: {
+                    text: 'Relative Humidity (%)',
+                    style: styleAxis
+                }
+            },
+                    stroke: {
+            curve: 'smooth',
+            width: 2,
+            dashArray: 10,
+            lineCap: 10,
+        },
+        markers: {
+            size: 2
+        },
+        };
+
+        var relativeHumidityChart = new ApexCharts(document.querySelector("#relativeHumidityChart"), relativeHumidityOptions);
+        relativeHumidityChart.render();
+
+        // Initialize the co2 chart
+        var co2Options = {
+        chart: {
+            type: 'line',
+            height: 450,
+            animations: {
+                enabled: false,
+            },
+            toolbar: styleToolbar,
+        },
+            series: [{
+                name: 'CO2',
+                data: []
+            }],
+            xaxis: {
+                type: 'datetime',
+                title: {
+                    text: 'Time',
+                    style: styleAxis
+                }
+            },
+            yaxis: {
+                title: {
+                    text: 'CO2 (ppm)',
+                    style: styleAxis
+                }
+            },
+                    stroke: {
+            curve: 'smooth',
+            width: 2,
+            dashArray: 10,
+            lineCap: 10,
+        },
+        markers: {
+            size: 2
+        },
+        };
+
+        var co2Chart = new ApexCharts(document.querySelector("#co2Chart"), co2Options);
+        co2Chart.render();
+
+        // Initialize the pm1 chart
+        var pm1Options = {
+        chart: {
+            type: 'line',
+            height: 450,
+            animations: {
+                enabled: false,
+            },
+            toolbar: styleToolbar,
+        },
+            series: [{
+                name: 'PM1',
+                data: []
+            }],
+            xaxis: {
+                type: 'datetime',
+                title: {
+                    text: 'Time',
+                    style: styleAxis
+                }
+            },
+            yaxis: {
+                title: {
+                    text: 'PM1 (µg/m³)',
+                    style: styleAxis
+                }
+            },
+                    stroke: {
+            curve: 'smooth',
+            width: 2,
+            dashArray: 10,
+            lineCap: 10,
+        },
+        markers: {
+            size: 2
+        },
+        };
+
+        var pm1Chart = new ApexCharts(document.querySelector("#pm1Chart"), pm1Options);
+        pm1Chart.render();
+
+        // Initialize the pm25 chart
+        var pm25Options = {
+        chart: {
+            type: 'line',
+            height: 450,
+            animations: {
+                enabled: false,
+            },
+            toolbar: styleToolbar,
+        },
+            series: [{
+                name: 'PM2.5',
+                data: []
+            }],
+            xaxis: {
+                type: 'datetime',
+                title: {
+                    text: 'Time',
+                    style: styleAxis
+                }
+            },
+            yaxis: {
+                title: {
+                    text: 'PM2.5 (µg/m³)',
+                    style: styleAxis
+                }
+            },
+                    stroke: {
+            curve: 'smooth',
+            width: 2,
+            dashArray: 10,
+            lineCap: 10,
+        },
+        markers: {
+            size: 2
+        },
+        };
+
+        var pm25Chart = new ApexCharts(document.querySelector("#pm25Chart"), pm25Options);
+        pm25Chart.render();
+
+        // Initialize the pm10 chart
+        var pm10Options = {
+        chart: {
+            type: 'line',
+            height: 450,
+            animations: {
+                enabled: false,
+            },
+            toolbar: styleToolbar,
+        },
+            series: [{
+                name: 'PM10',
+                data: []
+            }],
+            xaxis: {
+                type: 'datetime',
+                title: {
+                    text: 'Time',
+                    style: styleAxis
+                }
+            },
+            yaxis: {
+                title: {
+                    text: 'PM10 (µg/m³)',
+                    style: styleAxis
+                }
+            },
+                    stroke: {
+            curve: 'smooth',
+            width: 2,
+            dashArray: 10,
+            lineCap: 10,
+        },
+        markers: {
+            size: 2
+        },
+        };
+
+        var pm10Chart = new ApexCharts(document.querySelector("#pm10Chart"), pm10Options);
+        pm10Chart.render();
+
+        // Initialize charts with existing messages
+        var existingMessages = {{ messages|tojson }};
+        var airTemperatureData = [];
+        var relativeHumidityData = [];
+        var co2Data = [];
+        var pm1Data = [];
+        var pm25Data = [];
+        var pm10Data = [];
+
+        existingMessages.forEach(function(message) {
+            var dataPoint = parseMessage(message);
+            if (dataPoint) {
+                airTemperatureData.push(dataPoint.airTemperature);
+                relativeHumidityData.push(dataPoint.relativeHumidity);
+                co2Data.push(dataPoint.co2);
+                pm1Data.push(dataPoint.pm1);
+                pm25Data.push(dataPoint.pm25);
+                pm10Data.push(dataPoint.pm10);
+            }
+        });
+
+        airTemperatureChart.updateSeries([{
+            name: 'Air Temperature',
+            data: airTemperatureData
+        }]);
+
+        relativeHumidityChart.updateSeries([{
+            name: 'Relative Humidity',
+            data: relativeHumidityData
+        }]);
+
+        co2Chart.updateSeries([{
+            name: 'CO2',
+            data: co2Data
+        }]);
+
+        pm1Chart.updateSeries([{
+            name: 'PM1',
+            data: pm1Data
+        }]);
+
+        pm25Chart.updateSeries([{
+            name: 'PM2.5',
+            data: pm25Data
+        }]);
+
+        pm10Chart.updateSeries([{
+            name: 'PM10',
+            data: pm10Data
+        }]);
+
+        // Listen for new MQTT messages
+        socket.on('new_mqtt_message', function(data) {
+            var messagesList = document.getElementById('messages');
+            var newMessage = document.createElement('li');
+            newMessage.textContent = data.message;
+            messagesList.appendChild(newMessage);
+
+            var dataPoint = parseMessage(data.message);
+            if (dataPoint) {
+                airTemperatureChart.appendData([{
+                    data: [dataPoint.airTemperature]
+                }]);
+
+                relativeHumidityChart.appendData([{
+                    data: [dataPoint.relativeHumidity]
+                }]);
+
+                co2Chart.appendData([{
+                    data: [dataPoint.co2]
+                }]);
+
+                pm1Chart.appendData([{
+                    data: [dataPoint.pm1]
+                }]);
+
+                pm25Chart.appendData([{
+                    data: [dataPoint.pm25]
+                }]);
+
+                pm10Chart.appendData([{
+                    data: [dataPoint.pm10]
+                }]);
+            }
+        });
+    </script>
+    </div>
+</body>
+</html>

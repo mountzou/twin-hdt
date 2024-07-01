@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <title>Page 403 - TwinAIR.</title>
+    <!-- CSS files -->
+    <link href="{{ url_for('static', filename='css/tabler.min.css') }}" rel="stylesheet"/>
+    <link href="{{ url_for('static', filename='css/tabler-vendors.min.css') }}" rel="stylesheet"/>
+    <link href="{{ url_for('static', filename='css/demo.min.css') }}" rel="stylesheet"/>
+    <link href="{{ url_for('static', filename='css/twinair.css') }}" rel="stylesheet"/>
+</head>
+<body class=" border-top-wide border-primary d-flex flex-column">
+<div class="page page-center">
+    <div class="container-tight py-4">
+        <div class="empty">
+            <div class="empty-header">403</div>
+            <p class="empty-title">Oops… You just found an error page</p>
+            <p class="empty-subtitle text-muted">
+                We are sorry but the page you are looking for was not found
+            </p>
+            <div class="empty-action">
+                <a href="/index/" class="btn btn-primary">
+                  <img class="icon" src="{{ url_for('static', filename='icons/arrow-back-white.svg') }}"
+                         alt="Arrow Back">
+                    Take me home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
