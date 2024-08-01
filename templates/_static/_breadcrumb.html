@@ -1,0 +1,16 @@
+{% macro render_breadcrumb(page_pre_title, page_title) %}
+<div class="page-header d-print-none" id="breadcrumb">
+    <div class="container-xl">
+        <div class="row g-2 align-items-center">
+            <div class="col">
+                <div class="page-pretitle">
+                    {{ page_pre_title }}
+                </div>
+                <h2 class="page-title">
+                    {{ page_title }}
+                </h2>
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}

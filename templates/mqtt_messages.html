@@ -14,9 +14,9 @@
 <body>
     <div class="page">
         <!-- Common header -->
-        {% include '_header.html' %}
+        {% include '_static/_header.html' %}
         <!-- Common navbar -->
-        {% include '_navbar.html' %}
+        {% include '_static/_navbar.html' %}
 
         <div class="page-wrapper">
 
@@ -64,38 +64,6 @@
         <script type="text/javascript">
         // Initialize SocketIO
         var socket = io.connect('http://' + document.domain + ':' + location.port);
-
-        const params = {
-            'sensor_id': 'urn:ngsi-ld:hwsensors:16869',
-            'type': 'hwsensors',
-            'fromDate': '2024-06-01T12:00:00',
-            'toDate': '2024-06-01T12:43:00',
-            'limit': 200,
-            'attrs': 'airTemperature',
-            'aggrPeriod': 'hour',
-            'aggrMethod': 'min',
-        };
-
-        $.ajax({
-            url: '/get_pollutants_historical_data',
-            method: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify(params),
-            success: function(response) {
-                console.log('Response:', response);
-
-                const times = response.index.map(timestamp => {
-                    return new Date(timestamp).getTime();
-                });
-                const values = response.attributes[0].values;
-
-                console.log('Times:', times);
-                console.log('Values:', values);
-            },
-            error: function(error) {
-                console.error('Error:', error);
-            }
-        });
 
         // Function to parse message and extract data
         function parseMessage(message) {
@@ -395,6 +363,7 @@
 
         // Initialize charts with existing messages
         var existingMessages = {{ messages|tojson }};
+        var historicalData = {{ historical_data|tojson }};
         var airTemperatureData = [];
         var relativeHumidityData = [];
         var co2Data = [];
@@ -402,47 +371,75 @@
         var pm25Data = [];
         var pm10Data = [];
 
-        existingMessages.forEach(function(message) {
-            var dataPoint = parseMessage(message);
-            if (dataPoint) {
-                airTemperatureData.push(dataPoint.airTemperature);
-                relativeHumidityData.push(dataPoint.relativeHumidity);
-                co2Data.push(dataPoint.co2);
-                pm1Data.push(dataPoint.pm1);
-                pm25Data.push(dataPoint.pm25);
-                pm10Data.push(dataPoint.pm10);
+        var chartData = {
+            airTemperature: [],
+            relativeHumidity: [],
+            co2: [],
+            pm1: [],
+            pm25: [],
+            pm10: []
+        };
+
+        function processHistoricalData(attrName, historicalValues) {
+            return historicalValues.map((value, index) => {
+                return {
+                    x: new Date(historicalData.index[index]),
+                    y: value
+                };
+            });
+        }
+
+        historicalData.attributes.forEach(attribute => {
+            switch (attribute.attrName) {
+                case 'airTemperature':
+                    chartData.airTemperature = processHistoricalData(attribute.attrName, attribute.values);
+                    break;
+                case 'relativeHumidity':
+                    chartData.relativeHumidity = processHistoricalData(attribute.attrName, attribute.values);
+                    break;
+                case 'co2':
+                    chartData.co2 = processHistoricalData(attribute.attrName, attribute.values);
+                    break;
+                case 'pm1':
+                    chartData.pm1 = processHistoricalData(attribute.attrName, attribute.values);
+                    break;
+                case 'pm25':
+                    chartData.pm25 = processHistoricalData(attribute.attrName, attribute.values);
+                    break;
+                case 'pm10':
+                    chartData.pm10 = processHistoricalData(attribute.attrName, attribute.values);
+                    break;
             }
         });
 
-        airTemperatureChart.updateSeries([{
-            name: 'Air Temperature',
-            data: airTemperatureData
-        }]);
+        console.log(chartData);
 
-        relativeHumidityChart.updateSeries([{
-            name: 'Relative Humidity',
-            data: relativeHumidityData
-        }]);
+        // Update charts with historical data
+        airTemperatureChart.updateSeries([{ name: 'Air Temperature', data: chartData.airTemperature }]);
+        relativeHumidityChart.updateSeries([{ name: 'Relative Humidity', data: chartData.relativeHumidity }]);
+        co2Chart.updateSeries([{ name: 'CO2', data: chartData.co2 }]);
+        pm1Chart.updateSeries([{ name: 'PM1', data: chartData.pm1 }]);
+        pm25Chart.updateSeries([{ name: 'PM2.5', data: chartData.pm25 }]);
+        pm10Chart.updateSeries([{ name: 'PM10', data: chartData.pm10 }]);
 
-        co2Chart.updateSeries([{
-            name: 'CO2',
-            data: co2Data
-        }]);
+        existingMessages.forEach(function(message) {
+            var dataPoint = parseMessage(message);
+            if (dataPoint) {
+                chartData.airTemperature.push(dataPoint.airTemperature);
+                chartData.relativeHumidity.push(dataPoint.relativeHumidity);
+                chartData.co2.push(dataPoint.co2);
+                chartData.pm1.push(dataPoint.pm1);
+                chartData.pm25.push(dataPoint.pm25);
+                chartData.pm10.push(dataPoint.pm10);
+            }
+        });
 
-        pm1Chart.updateSeries([{
-            name: 'PM1',
-            data: pm1Data
-        }]);
-
-        pm25Chart.updateSeries([{
-            name: 'PM2.5',
-            data: pm25Data
-        }]);
-
-        pm10Chart.updateSeries([{
-            name: 'PM10',
-            data: pm10Data
-        }]);
+        airTemperatureChart.updateSeries([{ name: 'Air Temperature', data: chartData.airTemperature }]);
+        relativeHumidityChart.updateSeries([{ name: 'Relative Humidity', data: chartData.relativeHumidity }]);
+        co2Chart.updateSeries([{ name: 'CO2', data: chartData.co2 }]);
+        pm1Chart.updateSeries([{ name: 'PM1', data: chartData.pm1 }]);
+        pm25Chart.updateSeries([{ name: 'PM2.5', data: chartData.pm25 }]);
+        pm10Chart.updateSeries([{ name: 'PM10', data: chartData.pm10 }]);
 
         // Listen for new MQTT messages
         socket.on('new_mqtt_message', function(data) {
@@ -453,29 +450,12 @@
 
             var dataPoint = parseMessage(data.message);
             if (dataPoint) {
-                airTemperatureChart.appendData([{
-                    data: [dataPoint.airTemperature]
-                }]);
-
-                relativeHumidityChart.appendData([{
-                    data: [dataPoint.relativeHumidity]
-                }]);
-
-                co2Chart.appendData([{
-                    data: [dataPoint.co2]
-                }]);
-
-                pm1Chart.appendData([{
-                    data: [dataPoint.pm1]
-                }]);
-
-                pm25Chart.appendData([{
-                    data: [dataPoint.pm25]
-                }]);
-
-                pm10Chart.appendData([{
-                    data: [dataPoint.pm10]
-                }]);
+                airTemperatureChart.appendData([{ data: [dataPoint.airTemperature] }]);
+                relativeHumidityChart.appendData([{ data: [dataPoint.relativeHumidity] }]);
+                co2Chart.appendData([{ data: [dataPoint.co2] }]);
+                pm1Chart.appendData([{ data: [dataPoint.pm1] }]);
+                pm25Chart.appendData([{ data: [dataPoint.pm25] }]);
+                pm10Chart.appendData([{ data: [dataPoint.pm10] }]);
             }
         });
     </script>

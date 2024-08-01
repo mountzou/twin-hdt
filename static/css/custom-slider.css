@@ -1,14 +1,14 @@
 .irs--flat .irs-handle {
-    border-color: #8aa2c0;
+    border-color: #4299e1;
 }
 
 .irs--flat .irs-handle > i:first-child {
-    background-color: #8aa2c0; /* Amber */
+    background-color: #4299e1; /* Amber */
 }
 
 .irs--flat .irs-single, .irs--flat .irs-tooltip {
-    background-color: #8aa2c0;
-    border-color: #8aa2c0;
+    background-color: #4299e1;
+    border-color: #4299e1;
 }
 
 .irs--flat .irs-single, .irs--flat .irs-tooltip {
@@ -18,7 +18,7 @@
 .irs--flat .irs-bar {
     top: 25px;
     height: 12px;
-    background-color: #8aa2c0;
+    background-color: #4299e1;
 }
 
 .irs--flat .irs-from:before, .irs--flat .irs-to:before, .irs--flat .irs-single:before {

@@ -1,3 +1,15 @@
+const styleMarker = {
+    size: 2,
+    shape: 'square',
+};
+
+const styleStroke = {
+    curve: 'monotoneCubic',
+    width: 2,
+    dashArray: 0,
+    lineCap: 'butt',
+}
+
 const styleAxis = {
     fontSize: '14px',
     fontFamily: 'Nunito Sans, sans-serif',

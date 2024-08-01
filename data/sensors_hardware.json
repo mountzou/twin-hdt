@@ -1,0 +1,72 @@
+{
+  "trikala": {
+    "HardwareSensorIDs": [
+      "urn:ngsi-ld:hwsensors:17035",
+      "urn:ngsi-ld:hwsensors:17037",
+      "urn:ngsi-ld:hwsensors:17038",
+      "urn:ngsi-ld:hwsensors:17039",
+      "urn:ngsi-ld:hwsensors:17040",
+      "urn:ngsi-ld:hwsensors:17041",
+      "urn:ngsi-ld:hwsensors:17042",
+      "urn:ngsi-ld:hwsensors:17043",
+      "urn:ngsi-ld:hwsensors:17603",
+      "urn:ngsi-ld:hwsensors:17606"
+    ]
+  },
+  "thriassio": {
+    "HardwareSensorIDs": [
+      "urn:ngsi-ld:hwsensors:16980",
+      "urn:ngsi-ld:hwsensors:16983",
+      "urn:ngsi-ld:hwsensors:16984",
+      "urn:ngsi-ld:hwsensors:16985",
+      "urn:ngsi-ld:hwsensors:17588",
+      "urn:ngsi-ld:hwsensors:17590",
+      "urn:ngsi-ld:hwsensors:17591",
+      "urn:ngsi-ld:hwsensors:17592",
+      "urn:ngsi-ld:hwsensors:17593",
+      "urn:ngsi-ld:hwsensors:17594",
+      "urn:ngsi-ld:hwsensors:17595",
+      "urn:ngsi-ld:hwsensors:17596"
+    ]
+  },
+  "etra": {
+    "HardwareSensorIDs": [
+      "urn:ngsi-ld:hwsensors:16865",
+      "urn:ngsi-ld:hwsensors:16866",
+      "urn:ngsi-ld:hwsensors:16867",
+      "urn:ngsi-ld:hwsensors:16868",
+      "urn:ngsi-ld:hwsensors:16869",
+      "urn:ngsi-ld:hwsensors:16870",
+      "urn:ngsi-ld:hwsensors:17554",
+      "urn:ngsi-ld:hwsensors:17555",
+      "urn:ngsi-ld:hwsensors:17556",
+      "urn:ngsi-ld:hwsensors:17557",
+      "urn:ngsi-ld:hwsensors:17558",
+      "urn:ngsi-ld:hwsensors:17559",
+      "urn:ngsi-ld:hwsensors:17560",
+      "urn:ngsi-ld:hwsensors:17561"
+    ]
+  },
+  "dublin": {
+    "HardwareSensorIDs": [
+      "urn:ngsi-ld:hwsensors:16768",
+      "urn:ngsi-ld:hwsensors:16769",
+      "urn:ngsi-ld:hwsensors:16770",
+      "urn:ngsi-ld:hwsensors:16771",
+      "urn:ngsi-ld:hwsensors:16772",
+      "urn:ngsi-ld:hwsensors:16773",
+      "urn:ngsi-ld:hwsensors:16814",
+      "urn:ngsi-ld:hwsensors:16815",
+      "urn:ngsi-ld:hwsensors:16847",
+      "urn:ngsi-ld:hwsensors:16848",
+      "urn:ngsi-ld:hwsensors:16887",
+      "urn:ngsi-ld:hwsensors:16902",
+      "urn:ngsi-ld:hwsensors:16903",
+      "urn:ngsi-ld:hwsensors:16909",
+      "urn:ngsi-ld:hwsensors:17093",
+      "urn:ngsi-ld:hwsensors:17239",
+      "urn:ngsi-ld:hwsensors:17692",
+      "urn:ngsi-ld:hwsensors:17696"
+    ]
+  }
+}

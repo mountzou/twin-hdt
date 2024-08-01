@@ -1,0 +1,22 @@
+{% macro render_pollutant_card(pollutant_name, pollutant_desc, pollutant_href) %}
+<div class="col-md-6 col-lg-4 mb-3">
+    <div class="card bg-primary-lt">
+        <div class="card-body text-center">
+            <h3 class="card-title">{{ pollutant_name }}</h3>
+            <p class="text-secondary">{{ pollutant_desc }}</p>
+            <div class="text-center">
+                <a href="{{ pollutant_href }}" class="btn btn-outline-primary">Explore</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{% macro render_jumbotron(title, subtitle) %}
+<div class="jumbotron jumbotron-fluid py-3">
+    <div class="container">
+        <h1 class="text-center mb-4">{{ title }}</h1>
+        <p class="lead text-center">{{ subtitle }}</p>
+    </div>
+</div>
+{% endmacro %}

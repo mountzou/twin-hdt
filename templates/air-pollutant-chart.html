@@ -9,7 +9,7 @@
         <div class="col-md-2">
             <div class="mb-3">
                 <label class="form-label required">Sensor Type</label>
-                <select class="form-control" id="sensor-type">
+                <select class="form-control" id="type" disabled>
                     <option value="hwsensors">Hardware Sensors</option>
                     <option value="wsensors">Wearable Sensors</option>
                     <option value="vsensors">Virtual Sensors</option>
@@ -18,8 +18,29 @@
         </div>
         <div class="col-md-2">
             <div class="mb-3">
+                <label class="form-label required">Hardware Sensor ID</label>
+                <select class="form-control" id="sensor-id">
+                    <option value="urn:ngsi-ld:hwsensors:16865">16865</option>
+                    <option value="urn:ngsi-ld:hwsensors:16866">16866</option>
+                    <option value="urn:ngsi-ld:hwsensors:16867">16867</option>
+                    <option value="urn:ngsi-ld:hwsensors:16868">16868</option>
+                    <option value="urn:ngsi-ld:hwsensors:16869">16869</option>
+                    <option value="urn:ngsi-ld:hwsensors:16870">16870</option>
+                    <option value="urn:ngsi-ld:hwsensors:17554">17554</option>
+                    <option value="urn:ngsi-ld:hwsensors:17555">17555</option>
+                    <option value="urn:ngsi-ld:hwsensors:17556">17556</option>
+                    <option value="urn:ngsi-ld:hwsensors:17557">17557</option>
+                    <option value="urn:ngsi-ld:hwsensors:17558">17558</option>
+                    <option value="urn:ngsi-ld:hwsensors:17559">17559</option>
+                    <option value="urn:ngsi-ld:hwsensors:17560">17560</option>
+                    <option value="urn:ngsi-ld:hwsensors:17561">17561</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="mb-3">
                 <label class="form-label required">Aggregation method</label>
-                <select class="form-control" id="aggregation-method">
+                <select class="form-control" id="aggrMethod">
                     <option value="min">Minimum</option>
                     <option value="max">Maximum</option>
                     <option value="count">Count</option>
@@ -31,7 +52,7 @@
         <div class="col-md-2">
             <div class="mb-3">
                 <label class="form-label required">Aggregation period</label>
-                <select class="form-control" id="aggregation-period">
+                <select class="form-control" id="aggrPeriod">
                     <option value="hour">Hour</option>
                     <option value="minute">Minute</option>
                     <option value="month">Month</option>
@@ -40,21 +61,9 @@
                 </select>
             </div>
         </div>
-        <div class="col-md-2">
-            <div class="mb-3">
-                <label class="form-label required">Limit</label>
-                <select class="form-control" id="limit">
-                    <option value="50">50</option>
-                    <option value="100">100</option>
-                    <option value="200">200</option>
-                    <option value="500">500</option>
-                    <option value="1000">1000</option>
-                </select>
-            </div>
-        </div>
         <div class="col-md-1 mt-4">
             <div class="mb-3">
-                <button type="submit" class="btn btn-primary">Submit</button>
+                <button type="submit" class="btn btn-outline-primary">Submit</button>
             </div>
         </div>
     </div>
@@ -70,6 +79,6 @@
                 <p class="lead"><code>limit</code> is a modified jumbotron that occupies the entire horizontal space of its parent.</p>
             </div>
         </div>
-        <div id="air-pollutants-chart" data-pollutant="{{ pollutant }}" data-unit="{{ unit }}" style="display: none;"></div>
+        <div id="air-pollutants-chart" data-pollutant="{{ pollutant }}" data-unit="{{ pollutants_info[pollutant]['unit'] }}" style="display: none;"></div>
     </div>
 </div>

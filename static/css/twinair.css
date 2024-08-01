@@ -1,9 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap');
 
 :root {
-    --tblr-font-weight-medium: 600;
-    --tblr-font-weight-regular: 500;
     --tblr-font-weight-light: 400;
+    --tblr-font-weight-regular: 500;
+    --tblr-font-weight-medium: 600;
+    --tblr-font-weight-bold: 700;
+
+    --color-black: rgba(0,0,0, 100);
+    --color-white: rgba(255,255,255, 100);
 }
 
 body {
@@ -36,21 +40,18 @@ h1 {
 }
 
 .navbar {
-    --tblr-navbar-bg: white;
+    --tblr-navbar-bg: var(--color-white);
+    --tblr-navbar-color: var(--color-black);
     --tblr-navbar-border-width: 2px;
-    --tblr-navbar-color: black;
     --tblr-navbar-border-color: #f6f8fb;
-
-    font-weight: 700;
 }
 
 .navbar-header {
     min-height: 4.5rem;
-    border-color: #206bc4;
 }
 
 .nav-link-title {
-    font-weight: 500;
+    font-weight: var(--tblr-font-weight-medium);
 }
 
 .page-update-time {
@@ -68,7 +69,7 @@ h1 {
 }
 
 .nav-link-icon {
-    color: black;
+    color: var(--color-black);
     margin-right: 8px;
     font-size: 14px;
 }
@@ -87,7 +88,13 @@ h1 {
 }
 
 .apexcharts-tooltip {
-    background: rgba(0, 0, 0, 0.12) !important; /* 20% opacity black background */
+    background: rgba(0, 0, 0, 0.12) !important;
     color: #2F3645 !important;
-    border: none !important; /* Ensure the border is removed */
+    border: none !important;
+}
+
+.dropdown-item {
+    font-size: 14px;
+    font-weight: 550;
+    min-width: 8rem;
 }

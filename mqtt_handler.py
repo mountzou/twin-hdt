@@ -4,13 +4,12 @@ import paho.mqtt.client as mqtt
 import threading
 import logging
 import traceback
+import requests
+
+from config_env import HEADERS, MQTT_HOST, MQTT_USERNAME, MQTT_PASSWORD, WEARABLE_ID
 
 # MQTT broker details
-HOST = "twinairdmp.online"
-PORT = 1883
-USERNAME = "twinairguest"
-PASSWORD = "twinairmqtt"
-TOPIC = "etra/hwsensors/urn:ngsi-ld:hwsensors:16865/keyValues"
+TOPIC = f"patras/wsensors/urn:ngsi-ld:wsensors:{WEARABLE_ID}/keyValues"
 
 # Global variable to store MQTT messages
 mqtt_messages = []
@@ -41,9 +40,9 @@ def subscribe_to_topic(client: mqtt.Client):
 # Function to connect to the MQTT broker
 def connect_mqtt():
     client = mqtt.Client()
-    client.username_pw_set(username=USERNAME, password=PASSWORD)
-    client.connect(host=HOST, port=PORT, keepalive=60)
-    print(f"Connected to {HOST}:{PORT}")
+    client.username_pw_set(username=MQTT_USERNAME, password=MQTT_PASSWORD)
+    client.connect(host=MQTT_HOST, port=1883, keepalive=60)
+    print(f"Connected to {MQTT_HOST}:1883")
     return client
 
 

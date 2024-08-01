@@ -1,7 +1,13 @@
-{% macro input(label, id, name, help_id, help_text) %}
-<div class="mb-3">
-    <label class="form-label" for="{{ id }}">{{ label }}</label>
-    <input type="text" id="{{ id }}" name="{{ name }}" value="" aria-describedby="{{ help_id }}"/>
-    <div id="{{ help_id }}" class="form-text">{{ help_text }}</div>
+{% macro input(pollutant_name, pollutant_short_name, pollutant_typical_value) %}
+<div class="col-12 col-md">
+    <div class="mb-3">
+        <label class="form-label" for="indoor_{{ pollutant_short_name }}">
+            Indoor {{ pollutant_name }}
+        </label>
+        <input type="text" id="indoor_{{ pollutant_short_name }}" name="indoor_{{ pollutant_short_name }}" value="" aria-describedby="indoor_{{ pollutant_short_name }}_help"/>
+        <div id="indoor_{{ pollutant_short_name }}_help" class="form-text">
+            A typical Indoor {{ pollutant_name }} value is {{ pollutant_typical_value }}
+        </div>
+    </div>
 </div>
 {% endmacro %}

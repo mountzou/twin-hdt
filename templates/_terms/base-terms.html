@@ -15,8 +15,6 @@
     <!-- Import FontAwesome stylesheets -->
     <link href="{{ url_for('static', filename='css/fontawesome.all.min.css') }}" rel="stylesheet">
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
-
 </head>
 <body>
     {% block body %}
@@ -46,12 +44,6 @@
 
         <!-- Import jQuery library -->
         <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
-
-         <!-- Import ApexChart library -->
-        <script src="{{ url_for('static', filename='js/apex-charts.min.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/apex-chart-styles.js') }}"></script>
-
-        <script src="{{ url_for('static', filename='js/index-get-sensor-data.js') }}"></script>
 
     {% endblock %}
 </body>

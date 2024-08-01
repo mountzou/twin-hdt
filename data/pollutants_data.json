@@ -1,8 +1,0 @@
-{
-    "co2": {"average": 400, "peak": 1000, "unit": "ppm"},
-    "pm1": {"average": 10, "peak": 35, "unit": "µg/m³"},
-    "pn25": {"average": 10, "peak": 35, "unit": "µg/m³"},
-    "pn10": {"average": 10, "peak": 35, "unit": "µg/m³"},
-    "tvoc": {"average": 500, "peak": 1500, "unit": "ppb"},
-    "nox": {"average": 20, "peak": 50, "unit": "ppb"}
-}

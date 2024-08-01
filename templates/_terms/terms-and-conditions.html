@@ -1,18 +1,18 @@
-{% extends 'base-scenario-analysis.html' %}
+{% extends '_terms/base-terms.html' %}
 
-{% block title %}Scenario Analysis{% endblock %}
+{% block title %}Terms & Conditions{% endblock %}
 
 {% block content %}
 <div class="page">
 
     <!-- Page breadcrumb -->
     {% from '_static/_breadcrumb.html' import render_breadcrumb %}
-    {{ render_breadcrumb('Human Digital Twin', 'Scenario Analysis') }}
+    {{ render_breadcrumb('Human Digital Twin', 'Terms & Conditions') }}
 
     <!-- Input section for scenario analysis -->
     <div class="page-body">
         <div class="container-xl pt-2">
-          {% include 'scenario-analysis-inputs.html' %}
+          {% include '_terms/terms-and-conditions-text.html' %}
         </div>
     </div>
 </div>

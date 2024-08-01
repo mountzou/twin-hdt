@@ -1,43 +1,24 @@
 {% from "scenario-analysis-macros.html" import input %}
-<div class="row pt-2 pb-6">
-    <h1 class="head-description text-center">Analyze health impact of exposure to air pollutants.</h1>
-</div>
-<div class="row">
-    <div class="col-xl-12">
+
+{% set pollutants = [
+    {'name': 'Temperature', 'key': 'temp', 'typical_value': '22°C.'},
+    {'name': 'Humidity', 'key': 'hum', 'typical_value': '40%.'},
+    {'name': 'CO2', 'key': 'co2', 'typical_value': '200ppm.'},
+    {'name': 'TVOC', 'key': 'tvoc', 'typical_value': '5.'},
+    {'name': 'PM1', 'key': 'pm1', 'typical_value': '5 μg/m³.'},
+    {'name': 'PM2.5', 'key': 'pm25', 'typical_value': '5 μg/m³.'},
+    {'name': 'PM10', 'key': 'pm10', 'typical_value': '5 μg/m³.'},
+    {'name': 'NOX', 'key': 'nox', 'typical_value': '5 μg/m³.'}
+] %}
+
+{% for row in pollutants|batch(2, fill_with=None) %}
+<div class="row pb-4">
+    <div class="col-12">
         <div class="row">
-            <div class="col-md-6">
-                {{ input("Indoor Temperature", "indoor_temperature", "indoor_temperature", "indoorTempHelp", "A typical indoor temperature is 22°C.") }}
-            </div>
-            <div class="col-md-6">
-                {{ input("Indoor Humidity", "indoor_humidity", "indoor_humidity", "indoorHumHelp", "A typical indoor relative humidity is 40%.") }}
-            </div>
+            {% for pollutant in row if pollutant %}
+                {{ input(pollutant.name, pollutant.key, pollutant.typical_value) }}
+            {% endfor %}
         </div>
     </div>
 </div>
-<div class="row pt-2">
-    <div class="col-xl-12">
-        <div class="row">
-            <div class="col-md-6">
-                {{ input("Indoor CO2", "indoor_co2", "indoor_co2", "indoorCO2Help", "A typical indoor CO2 value is 200ppm.") }}
-            </div>
-            <div class="col-md-6">
-                {{ input("Indoor TVOC", "indoor_tvoc", "indoor_tvoc", "indoorVOCHelp", "A typical indoor VOC index value is 5.") }}
-            </div>
-        </div>
-    </div>
-</div>
-<div class="row pt-2">
-    <div class="col-xl-12">
-        <div class="row">
-            <div class="col-md-6 col-xl-4">
-                {{ input("Indoor PM1", "indoor_pm1", "indoor_pm1", "indoorPM1Help", "A typical indoor PM1 value is 5 μg/m³.") }}
-            </div>
-            <div class="col-md-6 col-xl-4">
-                {{ input("Indoor PM2.5", "indoor_pm25", "indoor_pm25", "indoorPM25Help", "A typical indoor PM2.5 value is 5 μg/m³.") }}
-            </div>
-            <div class="col-md-6 col-xl-4">
-                {{ input("Indoor PM10", "indoor_pm10", "indoor_pm10", "indoorPM10Help", "A typical indoor PM10 value is 5 μg/m³.") }}
-            </div>
-        </div>
-    </div>
-</div>
+{% endfor %}

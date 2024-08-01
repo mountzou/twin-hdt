@@ -1,0 +1,62 @@
+{
+    "co2": {
+        "unit": "ppm",
+        "pollutant_name": "CO2",
+        "pollutant_desc": "Carbon dioxide (CO2) is a colorless, odorless gas produced by burning carbon and organic compounds and by respiration. Elevated levels can lead to health issues.",
+        "pollutant_href": "/air-pollutant/co2"
+    },
+    "eco2": {
+        "unit": "ppm",
+        "pollutant_name": "eCO2",
+        "pollutant_desc": "Equivalent CO2 (eCO2) is an estimation of CO2 concentration based on the measurements of other gases. It helps to assess air quality in terms of CO2 levels.",
+        "pollutant_href": "/air-pollutant/eco2"
+    },
+    "pm1": {
+        "unit": "µg/m³",
+        "pollutant_name": "PM1.0",
+        "pollutant_desc": "Particulate matter less than 1 micrometer in diameter, PM1.0 can penetrate deeply into the lungs and even enter the bloodstream, posing significant health risks.",
+        "pollutant_href": "/air-pollutant/pm1"
+    },
+    "pm25": {
+        "unit": "µg/m³",
+        "pollutant_name": "PM2.5",
+        "pollutant_desc": "Particulate matter less than 2.5 micrometers in diameter, PM2.5 is capable of reaching the respiratory tract and is linked to various cardiovascular and respiratory diseases.",
+        "pollutant_href": "/air-pollutant/pm25"
+    },
+    "pm10": {
+        "unit": "µg/m³",
+        "pollutant_name": "PM10",
+        "pollutant_desc": "Particulate matter less than 10 micrometers in diameter, PM10 can be inhaled into the lungs but is generally filtered by the upper respiratory system.",
+        "pollutant_href": "/air-pollutant/pm10"
+    },
+    "formaldehyde": {
+        "unit": "µg/m³",
+        "pollutant_name": "Formaldehyde",
+        "pollutant_desc": "Formaldehyde is a colorless, strong-smelling gas used in making building materials and many household products, which can cause irritation and long-term health effects.",
+        "pollutant_href": "/air-pollutant/formaldehyde"
+    },
+    "pn10": {
+        "unit": "µg/m³",
+        "pollutant_name": "PN10",
+        "pollutant_desc": "Particulate matter that passes through a size-selective inlet with a 50 % efficiency cut-off at 10 μm aerodynamic diameter.",
+        "pollutant_href": "/air-pollutant/pn10"
+    },
+    "tvoc": {
+        "unit": "ppb",
+        "pollutant_name": "TVOC",
+        "pollutant_desc": "Total Volatile Organic Compounds (TVOC) are a group of organic chemical compounds that can easily become vapors or gases, affecting indoor air quality and health.",
+        "pollutant_href": "/air-pollutant/tvoc"
+    },
+    "airTemperature": {
+        "unit": "°C",
+        "pollutant_name": "Air Temperature",
+        "pollutant_desc": "Air temperature is a measure of how hot or cold the air in the indoor environment. It affects comfort, health, and indoor air quality.",
+        "pollutant_href": "/air-pollutant/airTemperature"
+    },
+    "relativeHumidity": {
+        "unit": "%",
+        "pollutant_name": "Relative Humidity",
+        "pollutant_desc": "Relative humidity is the amount of moisture in the air compared to what the air can 'hold' at that temperature. It affects comfort, health, and the condition of buildings.",
+        "pollutant_href": "/air-pollutant/relativeHumidity"
+    }
+}

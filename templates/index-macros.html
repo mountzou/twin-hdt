@@ -1,14 +1,18 @@
 {% macro jumbotron(title, subtitle) %}
-<div class="jumbotron jumbotron-fluid pt-4 pb-4 hidden-at-start">
-    <div class="container">
-        <h1 class="text-center mb-4">{{ title }}</h1>
-        <p class="lead text-center">{{ subtitle }}</p>
+<div class="jumbotron jumbotron-fluid pt-2">
+    <div class="container d-flex flex-column align-items-center">
+        <h1 class="mb-4">{{ title }}</h1>
+        <p class="lead">{{ subtitle }}</p>
     </div>
 </div>
 {% endmacro %}
 
-{% macro dropdown_with_id(dropdown_id) %}
-    {% set dropdown_id = dropdown_id %}
-    {% include 'index-dropdown-date.html' %}
+{% macro chart(chart_id) %}
+<div class="container-xl">
+    <div class="row">
+        <div class="col-lg-12">
+            <div id="{{ chart_id }}"></div>
+        </div>
+    </div>
+</div>
 {% endmacro %}
-

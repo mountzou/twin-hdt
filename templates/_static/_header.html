@@ -1,3 +1,4 @@
+<!-- _header.html -->
 <header class="navbar navbar-header navbar-expand-md d-print-none" id="header">
     <div class="container-xl">
         <!-- Toggler for mobile menu-->
@@ -7,15 +8,19 @@
         </button>
         <!-- Title - Human Digital Twin -->
         <h1 class="navbar-brand">Human Digital Twin</h1>
+
         <div class="navbar-nav flex-row order-md-last">
+            <!-- -->
             <div class="nav-item d-none d-md-flex me-3">
                 <div class="btn-list">
-                    <a href="/ai_assistant" class="btn" target="/ai-assistant" rel="noreferrer">
-                        <img class="icon" src="{{ url_for('static', filename='icons/brain-black.svg') }}" alt="AI-Assistant">
+                    <a href="/ai-assistant" class="btn" rel="noreferrer">
+                        <img class="icon" src="{{ url_for('static', filename='icons/brain-black.svg') }}" alt="AI assistant">
                         AI-Assistant
                     </a>
                 </div>
             </div>
+
+            <!-- TwinAIR User -->
             <div class="nav-item dropdown">
                 <a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown"
                    aria-label="Open user menu">
@@ -25,14 +30,15 @@
                         <div id="account-user-id" class="mt-1 small text-muted">user_1234</div>
                     </div>
                 </a>
+                <!-- User's dropdown menu items -->
                 <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                     <a href="/profile" class="dropdown-item">Profile</a>
                     <a href="/security" class="dropdown-item">Security</a>
-                    <div class="dropdown-divider"></div>
                     <a href="/settings" class="dropdown-item">Settings</a>
                     <a href="/logout" class="dropdown-item">Logout</a>
                 </div>
             </div>
+
         </div>
     </div>
 </header>

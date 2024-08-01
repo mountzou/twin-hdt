@@ -10,13 +10,18 @@ $(document).ready(function() {
         });
     }
 
-    initIonRangeSlider("#indoor_temperature", 16, 26, 17, " °C");
-    initIonRangeSlider("#indoor_humidity", 10, 100, 40, " %");
-    initIonRangeSlider("#indoor_tvoc", 10, 100, 40, " %");
-    initIonRangeSlider("#indoor_co2", 200, 2000, 300, " ppm");
-    initIonRangeSlider("#indoor_pm25", 10, 100, 40, " μg/m³");
-    initIonRangeSlider("#indoor_pm1", 10, 100, 40, " μg/m³");
-    initIonRangeSlider("#indoor_pm10", 10, 100, 40, " μg/m³");
+    const sliders = [
+        {selector: "#indoor_temp", min: 16, max: 26, from: 17, postfix: " °C"},
+        {selector: "#indoor_hum", min: 10, max: 100, from: 40, postfix: " %"},
+        {selector: "#indoor_tvoc", min: 10, max: 100, from: 40, postfix: " %"},
+        {selector: "#indoor_co2", min: 200, max: 2000, from: 300, postfix: " ppm"},
+        {selector: "#indoor_pm1", min: 10, max: 100, from: 40, postfix: " μg/m³"},
+        {selector: "#indoor_pm25", min: 10, max: 100, from: 40, postfix: " μg/m³"},
+        {selector: "#indoor_pm10", min: 10, max: 100, from: 40, postfix: " μg/m³"},
+        {selector: "#indoor_nox", min: 10, max: 100, from: 40, postfix: " μg/m³"}
+    ];
+
+    sliders.forEach(slider => {
+        initIonRangeSlider(slider.selector, slider.min, slider.max, slider.from, slider.postfix);
+    });
 });
-
-

@@ -1,47 +1,50 @@
 # sensor_data.py
 
-import requests
-from dotenv import load_dotenv
 import os
+import json
 
-# Load environment variables from .env file
+from utils import http_dmp_request
+from config_env import HEADERS, API_DPM_BASE_URL, API_DPM_BASE_URL_1, SENSOR_ID
+
+from dotenv import load_dotenv
 load_dotenv()
 
 
-def get_sensor_historical_data(params, fiware_service):
-    auth_token = os.getenv('AUTH_TOKEN')
+def get_sensor_historical_data(params, sensorID):
 
-    if not auth_token:
-        print('Error: AUTH_TOKEN is not set in the environment variables')
-        return None
+    URL = f'{API_DPM_BASE_URL}/entities/{sensorID}'
 
-    sensor_id = params.get('sensor_id')
-    url = f'http://twinairdmp.online:8669/v2/entities/{sensor_id}'
+    return http_dmp_request(URL, HEADERS, params)
+
+
+def get_sensor_historical_latest_data():
+
+    URL = f'{API_DPM_BASE_URL}/entities/urn:ngsi-ld:hwsensors:{SENSOR_ID}'
 
     query_params = {
-        'type': params.get('sensor_type'),
-        'fromDate': params.get('from_date'),
-        'toDate': params.get('to_date'),
-        'limit': params.get('limit'),
-        'attrs': params.get('attrs'),
-        'aggrPeriod': params.get('aggr_period'),
-        'aggrMethod': params.get('aggr_method'),
+        'type': 'hwsensors',
+        'lastN': 20
     }
 
-    headers = {
-        'Fiware-Service': fiware_service,
-        'X-Auth-Token': auth_token
+    return http_dmp_request(URL, HEADERS, query_params)
+
+
+def get_all_sensor_historical_latest_data():
+    url = f'{API_DPM_BASE_URL_1}ngsi-ld/v1/entities/'
+
+    query_params = {
+        'type': 'hwsensors',
+        'lastN': 20
     }
 
-    response = requests.get(url, headers=headers, params=query_params)
+    return http_dmp_request(url, HEADERS, query_params)
 
-    if response.status_code == 200:
-        try:
-            data = response.json()
-            return data
-        except ValueError:
-            print('Error decoding JSON:', response.text)
-            return None
-    else:
-        print(f'Error: Received HTTP status code {response.status_code}')
-        return None
+
+def get_hardware_sensor_ids():
+
+    with open('data/sensors_hardware.json', 'r') as file:
+        data = json.load(file)
+
+    sensor_ids = data.get(os.getenv('FIWARE_SERVICE'), {}).get('HardwareSensorIDs', [])
+
+    return sensor_ids
