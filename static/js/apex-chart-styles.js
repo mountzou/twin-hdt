@@ -31,13 +31,18 @@ const styleTooltip = {
     y: {
         formatter: function(y) {
             if (typeof y !== "undefined") {
-                return y.toFixed(0) + " " + pollutantUnit;
+                if (typeof pollutantUnit !== "undefined" && pollutantUnit) {
+                    return y.toFixed(0) + " " + pollutantUnit;
+                } else {
+                    return y.toFixed(0);
+                }
             }
             return y;
         },
         style: styleAxis
     }
 };
+
 
 const styleToolbar = {
     show: true,

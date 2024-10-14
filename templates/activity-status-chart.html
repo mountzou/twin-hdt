@@ -1,0 +1,541 @@
+<div class="container">
+    <!-- Row for the two Activity Status cards before the charts -->
+    <div class="row mt-1">
+        <!-- First half-width card for Activity Status -->
+        <div class="col-md-4">
+            <div class="card position-relative">
+                <!-- Red dot -->
+                <div class="red-dot"></div>
+                <div class="card-body">
+                    <h5 class="card-title">Activity Status</h5>
+                    <div class="row">
+                        <!-- Column for Idle -->
+                        <div class="col border-end">
+                            <p class="card-text text-center">Idle</p>
+                        </div>
+                        <!-- Column for Mobile -->
+                        <div class="col border-end">
+                            <p class="card-text text-center text-success"><strong>Mobile</strong></p>
+                        </div>
+                        <!-- Column for Active -->
+                        <div class="col">
+                            <p class="card-text text-center">Active</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Second half-width card for Particle Matters (PMs) -->
+        <div class="col-md-8">
+            <div class="card position-relative">
+                <!-- Red dot -->
+                <div class="red-dot"></div>
+                <div class="card-body">
+                    <h5 class="card-title">Indoor Air Pollutants</h5>
+                    <div class="row">
+                        <!-- Column for PM1.0 -->
+                        <div class="col border-end">
+                            <p class="card-text text-center"><strong>PM<sub>1.0</sub></strong> 29.2 μg/m<sup>3</sup></p>
+                        </div>
+                        <!-- Column for PM2.5 -->
+                        <div class="col border-end">
+                            <p class="card-text text-center"><strong>PM<sub>2.5</sub></strong> 29.8 μg/m<sup>3</sup></p>
+                        </div>
+                        <!-- Column for PM10 -->
+                        <div class="col border-end">
+                            <p class="card-text text-center"><strong>PM<sub>10</sub></strong> 29.9 μg/m<sup>3</sup></p>
+                        </div>
+                        <div class="col border-end">
+                            <p class="card-text text-center"><strong>CO<sub>2</sub></strong> 520.6 ppm</p>
+                        </div>
+                        <div class="col">
+                            <p class="card-text text-center"><strong>TVOC</strong> 110</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row for the three charts -->
+    <div class="row mt-4">
+        <!-- First column for PM1 chart -->
+        <div class="col-md-4">
+            <div id="pm1-chart"></div>
+        </div>
+
+        <!-- Second column for PM2.5 chart -->
+        <div class="col-md-4">
+            <div id="pm25-chart"></div>
+        </div>
+
+        <!-- Third column for PM10 chart -->
+        <div class="col-md-4">
+            <div id="pm10-chart"></div>
+        </div>
+    </div>
+
+    <!-- Row for the two Indoor Air Quality cards after the charts -->
+    <div class="row mt-4">
+        <!-- First half-width card for Indoor Air Quality -->
+        <div class="col-md-6">
+            <div class="card" style="background-color: rgba(227, 150, 62, 0.2);">
+                <div class="card-body">
+                    <h5 class="card-title">Moderate</h5>
+                    <p class="card-text">The Indoor Air Quality status during the last 24-hours.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Second half-width card for Indoor Air Quality -->
+        <div class="col-md-6">
+            <div class="card" style="background-color: rgba(47, 179, 68, 0.2);">
+                <div class="card-body">
+                    <h5 class="card-title">Good</h5>
+                    <p class="card-text">The Indoor Air Quality status during the last 1-minute.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4 mb-4">
+        <!-- First half-width column for CO2 chart -->
+        <div class="col-md-6">
+            <div id="co2-chart"></div>
+        </div>
+
+        <!-- Second half-width column for TVOC chart -->
+        <div class="col-md-6">
+            <div id="tvoc-chart"></div>
+        </div>
+    </div>
+
+    {% import 'index-macros.html' as macros %}
+
+    {{ macros.jumbotron('Actions', 'Track your activities during the last 24-h based on the indoor air pollutant
+    measurements.' ) }}
+
+    <div class="container">
+        <!-- Previous content... -->
+
+        <!-- New row for the histogram chart -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div id="status-histogram-chart"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Add the following CSS in your <head> or a stylesheet -->
+<style>
+    .red-dot {
+        width: 10px;
+        height: 10px;
+        background-color: rgb(255, 69, 96);
+        border-radius: 50%;
+        position: absolute;
+        top: 20px;
+        right: 20px;
+    }
+</style>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/get_data_wb_device_latest', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ /* any necessary payload data here */ })
+        })
+            .then(response => response.json())
+            .then(data => {
+            if (data.error) {
+                console.error('Error fetching data:', data.error);
+            } else {
+                console.log('Data received:', data);
+
+                // Function to aggregate data by hour and apply conditional subtraction
+                function aggregateByHour(values, timestamps) {
+                    const hourlyData = {};
+
+                    values.forEach((value, index) => {
+                        const date = new Date(timestamps[index]);
+                        const hour = date.toISOString().split(':')[0]; // Get the hour part "YYYY-MM-DDTHH"
+
+                        if (!hourlyData[hour]) {
+                            hourlyData[hour] = { sum: 0, count: 0 };
+                        }
+
+                        // Apply conditional subtraction before summing
+                        const adjustedValue = value > 50 ? value - 40 : value;
+                        hourlyData[hour].sum += adjustedValue;
+                        hourlyData[hour].count += 1;
+                    });
+
+                    // Format data for ApexCharts with hourly averages
+                    return Object.entries(hourlyData).map(([hour, { sum, count }]) => ({
+                        x: hour + ':00:00Z', // Complete ISO string for ApexCharts
+                        y: parseFloat((sum / count).toFixed(2))  // Average value rounded to 2 decimals
+                    }));
+                }
+
+                // Function to calculate average of an array considering the subtraction rule
+                function calculateAdjustedAverage(values) {
+                    const adjustedValues = values.map(value => (value > 50 ? value - 40 : value));
+                    const sum = adjustedValues.reduce((acc, val) => acc + val, 0);
+                    return sum / adjustedValues.length;
+                }
+
+                // Extract data for PMs, CO2, and TVOC
+                const pm1Data = data.attributes.find(attr => attr.attrName === "pm1").values;
+                const pm25Data = data.attributes.find(attr => attr.attrName === "pm25").values;
+                const pm10Data = data.attributes.find(attr => attr.attrName === "pm10").values;
+                const co2Data = data.attributes.find(attr => attr.attrName === "co2").values;
+                const tvocData = data.attributes.find(attr => attr.attrName === "tvoc").values;
+                const timestamps = data.index;
+
+                // Calculate adjusted averages for each type
+                const averagePm1 = calculateAdjustedAverage(pm1Data);
+                const averagePm25 = calculateAdjustedAverage(pm25Data);
+                const averagePm10 = calculateAdjustedAverage(pm10Data);
+                const averageCo2 = calculateAdjustedAverage(co2Data);
+                const averageTvoc = calculateAdjustedAverage(tvocData);
+
+                // Determine if aggregation is needed
+                let formattedPm1Data, formattedPm25Data, formattedPm10Data, formattedCo2Data, formattedTvocData;
+
+                if (pm1Data.length > 50) {
+                    // Aggregate data by hour if more than 50 samples
+                    formattedPm1Data = aggregateByHour(pm1Data, timestamps);
+                    formattedPm25Data = aggregateByHour(pm25Data, timestamps);
+                    formattedPm10Data = aggregateByHour(pm10Data, timestamps);
+                    formattedCo2Data = aggregateByHour(co2Data, timestamps);
+                    formattedTvocData = aggregateByHour(tvocData, timestamps);
+                } else {
+                    // If no aggregation needed, format data for ApexCharts
+                    formattedPm1Data = pm1Data.map((value, index) => {
+                        const adjustedValue = value > 50 ? value - 40 : value;
+                        return { x: timestamps[index], y: adjustedValue };
+                    });
+                    formattedPm25Data = pm25Data.map((value, index) => {
+                        const adjustedValue = value > 50 ? value - 40 : value;
+                        return { x: timestamps[index], y: adjustedValue };
+                    });
+                    formattedPm10Data = pm10Data.map((value, index) => {
+                        const adjustedValue = value > 50 ? value - 40 : value;
+                        return { x: timestamps[index], y: adjustedValue };
+                    });
+                    formattedCo2Data = co2Data.map((value, index) => {
+                        const adjustedValue = value > 50 ? value - 40 : value;
+                        return { x: timestamps[index], y: adjustedValue };
+                    });
+                    formattedTvocData = tvocData.map((value, index) => {
+                        const adjustedValue = value > 50 ? value - 40 : value;
+                        return { x: timestamps[index], y: adjustedValue };
+                    });
+                }
+
+                // Common chart options with reduced y-axis ticks for PM charts
+                const commonPmOptions = {
+                    chart: {
+                        type: 'line',
+                        height: 400,
+                        toolbar: styleToolbar
+                    },
+                    markers: styleMarker,
+                    stroke: styleStroke,
+                    xaxis: {
+                        type: 'datetime',
+                        labels: styleTicks
+                    },
+                    tooltip: styleTooltip,
+                    yaxis: {
+                        tickAmount: 5,
+                        title: {
+                            text: 'Concentration (µg/m³)',
+                            style: styleAxis
+                        }
+                    }
+                };
+
+                // Specific chart options for CO2 and TVOC charts
+                const co2TvocOptions = {
+                    chart: {
+                        type: 'line',
+                        height: 400,
+                        toolbar: styleToolbar
+                    },
+                    markers: styleMarker,
+                    stroke: styleStroke,
+                    xaxis: {
+                        type: 'datetime',
+                        labels: styleTicks
+                    },
+                    tooltip: styleTooltip,
+                };
+
+                // Create chart options for PM1, PM2.5, PM10, CO2, and TVOC
+                const pm1Options = {
+                    ...commonPmOptions,
+                    series: [{
+                        name: 'PM1',
+                        data: formattedPm1Data
+                    }],
+                    annotations: {
+                        yaxis: [
+                            {
+                                y: averagePm1,
+                                borderColor: '#ff4560',
+                                label: {
+                                    borderColor: '#ff4560',
+                                    style: {
+                                        color: '#fff',
+                                        background: '#ff4560'
+                                    },
+                                    text: `Avg: ${averagePm1.toFixed(2)}`
+                                }
+                            }
+                        ]
+                    },
+                    title: {
+                        text: 'PM1 Levels Over Time',
+                        style: styleAxis
+                    }
+                };
+
+                const pm25Options = {
+                    ...commonPmOptions,
+                    series: [{
+                        name: 'PM2.5',
+                        data: formattedPm25Data
+                    }],
+                    annotations: {
+                        yaxis: [
+                            {
+                                y: averagePm25,
+                                borderColor: '#ff4560',
+                                label: {
+                                    borderColor: '#ff4560',
+                                    style: {
+                                        color: '#fff',
+                                        background: '#ff4560'
+                                    },
+                                    text: `Avg: ${averagePm25.toFixed(2)}`
+                                }
+                            }
+                        ]
+                    },
+                    title: {
+                        text: 'PM2.5 Levels Over Time',
+                        style: styleAxis
+                    }
+                };
+
+                const pm10Options = {
+                    ...commonPmOptions,
+                    series: [{
+                        name: 'PM10',
+                        data: formattedPm10Data
+                    }],
+                    annotations: {
+                        yaxis: [
+                            {
+                                y: averagePm10,
+                                borderColor: '#ff4560',
+                                label: {
+                                    borderColor: '#ff4560',
+                                    style: {
+                                        color: '#fff',
+                                        background: '#ff4560'
+                                    },
+                                    text: `Avg: ${averagePm10.toFixed(2)}`
+                                }
+                            }
+                        ]
+                    },
+                    title: {
+                        text: 'PM10 Levels Over Time',
+                        style: styleAxis
+                    }
+                };
+
+                const co2Options = {
+                    ...co2TvocOptions,
+                    series: [{
+                        name: 'CO2',
+                        data: formattedCo2Data
+                    }],
+                    yaxis: {
+                        tickAmount: 5,
+                        title: {
+                            text: 'Concentration (ppm)',
+                            style: styleAxis
+                        }
+                    },
+                    annotations: {
+                        yaxis: [
+                            {
+                                y: averageCo2,
+                                borderColor: '#ff4560',
+                                label: {
+                                    borderColor: '#ff4560',
+                                    style: {
+                                        color: '#fff',
+                                        background: '#ff4560'
+                                    },
+                                    text: `Avg: ${averageCo2.toFixed(2)}`
+                                }
+                            }
+                        ]
+                    },
+                    title: {
+                        text: 'CO2 Levels Over Time',
+                        style: styleAxis
+                    }
+                };
+
+                const tvocOptions = {
+                    ...co2TvocOptions,
+                    series: [{
+                        name: 'TVOC',
+                        data: formattedTvocData
+                    }],
+                    yaxis: {
+                        tickAmount: 5,
+                        title: {
+                            text: 'Concentration',
+                            style: styleAxis
+                        }
+                    },
+                    annotations: {
+                        yaxis: [
+                            {
+                                y: averageTvoc,
+                                borderColor: '#ff4560',
+                                label: {
+                                    borderColor: '#ff4560',
+                                    style: {
+                                        color: '#fff',
+                                        background: '#ff4560'
+                                    },
+                                    text: `Avg: ${averageTvoc.toFixed(2)}`
+                                }
+                            }
+                        ]
+                    },
+                    title: {
+                        text: 'TVOC Levels Over Time',
+                        style: styleAxis
+                    }
+                };
+
+                const pm1Chart = new ApexCharts(document.querySelector("#pm1-chart"), pm1Options);
+                const pm25Chart = new ApexCharts(document.querySelector("#pm25-chart"), pm25Options);
+                const pm10Chart = new ApexCharts(document.querySelector("#pm10-chart"), pm10Options);
+                const co2Chart = new ApexCharts(document.querySelector("#co2-chart"), co2Options);
+                const tvocChart = new ApexCharts(document.querySelector("#tvoc-chart"), tvocOptions);
+
+                pm1Chart.render();
+                pm25Chart.render();
+                pm10Chart.render();
+                co2Chart.render();
+                tvocChart.render();
+            }
+        })
+            .catch(error => console.error('Fetch error:', error));
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/get_data_wb_device_latest', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ /* any necessary payload data here */ })
+        })
+            .then(response => response.json())
+            .then(data => {
+            if (data.error) {
+                console.error('Error fetching data:', data.error);
+            } else {
+                console.log('Data received:', data);
+
+                // Categories for histogram
+                const categories = ["Boiling", "Chemical Cleaning", "Frying", "Mopping", "Oven Cooking", "Smoking", "Vacuuming"];
+
+                // Updated status frequency data based on provided values
+                const statusFrequencyData = {
+                    "Boiling": 1,
+                    "Chemical Cleaning": 1,
+                    "Frying": 0,
+                    "Mopping": 1,
+                    "Oven Cooking": 2,
+                    "Smoking": 5,
+                    "Vacuuming": 1
+                };
+
+                // Prepare data for the histogram
+                const seriesData = categories.map(category => ({
+                    x: category,
+                    y: statusFrequencyData[category]
+                }));
+
+                // Options for the histogram chart
+                const histogramOptions = {
+                    chart: {
+                        type: 'bar',
+                        height: 400,
+                        toolbar: styleToolbar
+                    },
+                    plotOptions: {
+                        bar: {
+                            horizontal: false,
+                            columnWidth: '40%',
+                            endingShape: 'rounded',
+                            borderRadius: 5,
+                            borderRadiusApplication: 'end',
+                        }
+                    },
+                    dataLabels: {
+                        enabled: false
+                    },
+                    xaxis: {
+                        categories: categories,
+                        labels: {
+                            style: styleTicks
+                        }
+                    },
+                    yaxis: {
+                        forceNiceScale: true,
+                        labels: {
+                            formatter: function(value) {
+                                return Math.floor(value);
+                            }
+                        },
+                        title: {
+                            text: 'Frequency',
+                            style: styleAxis
+                        }
+                    },
+                    series: [{
+                        name: 'Frequency',
+                        data: seriesData
+                    }],
+                    tooltip: styleTooltip,
+                };
+
+                // Render the histogram chart
+                const histogramChart = new ApexCharts(document.querySelector("#status-histogram-chart"), histogramOptions);
+                histogramChart.render();
+            }
+        })
+            .catch(error => console.error('Fetch error:', error));
+    });
+</script>

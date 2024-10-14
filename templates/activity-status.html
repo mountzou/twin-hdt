@@ -1,0 +1,20 @@
+{% extends 'base-air-pollutant.html' %}
+
+{% block title %}Activity Analysis{% endblock %}
+
+{% block content %}
+<div class="page">
+
+    <!-- Page breadcrumb -->
+    {% from '_static/_breadcrumb.html' import render_breadcrumb %}
+    {{ render_breadcrumb('Human Digital Twin', 'Activity Analysis') }}
+
+    <!-- Page body -->
+    <div class="page-body" id="chart">
+        <div class="container-xl">
+            {% include 'activity-status-chart.html' %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}
