@@ -1,9 +1,12 @@
 import requests
 
-
 ''' A util function to perform HTTP requests on TwinAIR Data Management Platform '''
+
+
 def http_dmp_request(url, header, params):
     response = requests.get(url, headers=header, params=params)
+
+    print(response.json())
 
     if response.status_code == 200:
         try:

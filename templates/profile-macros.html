@@ -1,0 +1,9 @@
+{% macro floating_input(id, name, label, value, type="text") %}
+<div class="col-md-6">
+    <div class="form-floating">
+        <input type="{{ type }}" class="form-control" id="{{ id }}" name="{{ name }}"
+               placeholder="{{ label }}" value="{{ value }}" disabled>
+        <label for="{{ id }}">{{ label }}</label>
+    </div>
+</div>
+{% endmacro %}

@@ -2,7 +2,7 @@
 <div class="jumbotron jumbotron-fluid pt-2">
     <div class="container d-flex flex-column align-items-center">
         <h1 class="mb-4">{{ title }}</h1>
-        <p class="lead">{{ subtitle }}</p>
+        <p class="lead">{{ subtitle | safe }}</p>
     </div>
 </div>
 {% endmacro %}

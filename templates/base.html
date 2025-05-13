@@ -19,40 +19,62 @@
 
 </head>
 <body>
-    {% block body %}
+{% block body %}
 
-        <div class="page">
-            <!-- Include the header of the TwinAIR HDT -->
-            {% include '_static/_header.html' %}
-            <!-- Include the navbar of the TwinAIR HDT -->
-            {% include '_static/_navbar.html' %}
+<div class="page">
+    <!-- Include the header of the TwinAIR HDT -->
+    {% include '_static/_header.html' %}
+    <!-- Include the navbar of the TwinAIR HDT -->
+    {% include '_static/_navbar.html' %}
 
-            <div class="page-wrapper">
-                {% block content %}
-                    <!-- Page specific content goes here -->
-                {% endblock %}
-            </div>
+    <div class="page-wrapper">
+        {% block content %}
+        <!-- Page specific content goes here -->
+        {% endblock %}
+    </div>
 
-            <!-- Include the footer of the TwinAIR HDT -->
-            {% include '_static/_footer.html' %}
-        </div>
+    <!-- Include the footer of the TwinAIR HDT -->
+    {% include '_static/_footer.html' %}
+</div>
 
-        <!-- Import HDT theming core libraries -->
-        <script src="{{ url_for('static', filename='js/demo-theme.min.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/demo.min.js') }}"></script>
+<!-- Import HDT theming core libraries -->
+<script src="{{ url_for('static', filename='js/demo-theme.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/demo.min.js') }}"></script>
 
-        <!-- Import Bootstrap library -->
-        <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+<!-- Import Bootstrap library -->
+<script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
 
-        <!-- Import jQuery library -->
-        <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+<!-- Import jQuery library -->
+<script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
 
-         <!-- Import ApexChart library -->
-        <script src="{{ url_for('static', filename='js/apex-charts.min.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/apex-chart-styles.js') }}"></script>
+<!-- Import util functions -->
+<script src="{{ url_for('static', filename='js/util-date.js') }}"></script>
+<script src="{{ url_for('static', filename='js/util-statistics.js') }}"></script>
+<script src="{{ url_for('static', filename='js/util-chart.js') }}"></script>
 
-        <script src="{{ url_for('static', filename='js/index-get-sensor-data.js') }}"></script>
+<script src="{{ url_for('static', filename='js/index-predict-co2.js') }}"></script>
 
-    {% endblock %}
+<!-- Import ApexChart library -->
+<script src="{{ url_for('static', filename='js/apex-charts.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/apex-chart-styles.js') }}"></script>
+
+<script src="{{ url_for('static', filename='js/index-wb-data.js') }}"></script>
+<script src="{{ url_for('static', filename='js/index-pred-co2.js') }}"></script>
+
+<!--<script>-->
+<!--    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {-->
+<!--        new bootstrap.Tooltip(el);-->
+<!--    });-->
+<!--</script>-->
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const now = new Date();
+        const options = { month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' };
+        document.getElementById('updateTime').textContent = now.toLocaleString('en-US', options);
+    });
+</script>
+
+{% endblock %}
 </body>
 </html>

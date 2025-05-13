@@ -13,10 +13,10 @@
             <!-- -->
             <div class="nav-item d-none d-md-flex me-3">
                 <div class="btn-list">
-                    <a href="/ai-assistant" class="btn" rel="noreferrer">
-                        <img class="icon" src="{{ url_for('static', filename='icons/brain-black.svg') }}" alt="AI assistant">
-                        AI-Assistant
-                    </a>
+<!--                    <a href="/ai-assistant" class="btn" rel="noreferrer">-->
+<!--                        <img class="icon" src="{{ url_for('static', filename='icons/brain-black.svg') }}" alt="AI assistant">-->
+<!--                        AI-Assistant-->
+<!--                    </a>-->
                 </div>
             </div>
 
@@ -27,7 +27,7 @@
                     <span class="avatar avatar-sm" style="background-image: url(./static/avatars/000m.jpg)">N/A</span>
                     <div class="d-none d-xl-block ps-2">
                         <div id="account-user-name">Chris Mountzouris</div>
-                        <div id="account-user-id" class="mt-1 small text-muted">user_1234</div>
+                        <div id="account-user-id" class="mt-1 small text-muted">{{ session['tenant'] }}</div>
                     </div>
                 </a>
                 <!-- User's dropdown menu items -->

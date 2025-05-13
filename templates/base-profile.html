@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <title>{% block title %} {% endblock %} - Human Digital Twin | TwinAIR</title>
+
+    <!-- Import HDT theming core .css files -->
+    <link href="{{ url_for('static', filename='css/tabler.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/twinair.css') }}" rel="stylesheet">
+
+    <!-- Import FontAwesome stylesheets -->
+    <link href="{{ url_for('static', filename='css/fontawesome.all.min.css') }}" rel="stylesheet">
+
+</head>
+<body>
+    {% block body %}
+
+        <div class="page">
+            <!-- Include the header of the TwinAIR HDT -->
+            {% include '_static/_header.html' %}
+            <!-- Include the navbar of the TwinAIR HDT -->
+            {% include '_static/_navbar.html' %}
+
+            <div class="page-wrapper">
+                {% block content %}
+                    <!-- Page specific content goes here -->
+                {% endblock %}
+            </div>
+
+            <!-- Include the footer of the TwinAIR HDT -->
+            {% include '_static/_footer.html' %}
+        </div>
+
+        <!-- Import HDT theming core libraries -->
+        <script src="{{ url_for('static', filename='js/demo-theme.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/demo.min.js') }}"></script>
+
+        <!-- Import Bootstrap library -->
+        <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+
+        <!-- Import jQuery library -->
+        <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+
+    {% endblock %}
+</body>
+</html>

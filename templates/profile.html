@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+
+{% from "profile-macros.html" import floating_input %}
+
+<div class="page">
+
+    <!-- Page header -->
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col d-flex d-md-block flex-column align-items-center text-md-start">
+                    <!-- Page pre-title -->
+                    <div class="page-pretitle">
+                        Human Digital Twin
+                    </div>
+                    <h2 class="page-title">
+                        Profile
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Page body -->
+    <div class="page-body">
+        <div class="container-xl">
+
+            <div class="row row-cards">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 class="card-title">User Information</h3>
+                            <p class="card-subtitle text-muted">Your personal account information in the TwinAIR digital
+                                ecosystem.</p>
+
+                            <!-- First Row: Username & Email -->
+                            <div class="row g-3">
+                                {{ floating_input("floating-username", "username", "Username", session['username']) }}
+                                {{ floating_input("floating-email", "email", "Email", session['email'], "email") }}
+                            </div>
+
+                            <!-- Second Row: First Name & Last Name -->
+                            <div class="row g-3 mt-3">
+                                {{ floating_input("floating-fname", "fname", "First Name", session['firstName']) }}
+                                {{ floating_input("floating-lname", "lname", "Last Name", session['lastName']) }}
+                            </div>
+
+                            <!-- Third Row: Tenant & Admin -->
+                            <div class="row g-3 mt-3">
+                                {{ floating_input("floating-tenant", "tenant", "Tenant", session['tenant']) }}
+                                {{ floating_input("floating-admin", "admin", "Admin", session['admin']) }}
+                            </div>
+
+                        </div>
+                        <div class="card-footer">
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <i class="fas fa-exclamation-triangle text-info me-3"></i>
+                                    Personal account details cannot be edited directly in HumanDT. For any updates,
+                                    please contact <a href="#">ETRA</a>.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="row row-cards mt-4">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 class="card-title">Sensors Information</h3>
+                            <p class="card-subtitle text-muted">Overview of the hardware, wearable, and virtual sensors
+                                connected to your organization
+                                and/or tenant.</p>
+
+                            <div class="row">
+                                <!-- Hardware Sensors (Left Column) -->
+                                <div class="col-md-6">
+                                    <h5 class="mt-3">Hardware Sensors</h5>
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            {% if session['hwsensors_ids'] %}
+                                            {% for sensor_id in session['hwsensors_ids'] %}
+                                            <tr>
+                                                <td>{{ sensor_id }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                            {% else %}
+                                            <tr>
+                                                <td class="text-muted">No hardware sensors available.</td>
+                                            </tr>
+                                            {% endif %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- Wearable Sensors (Right Column) -->
+                                <div class="col-md-6">
+                                    <h5 class="mt-3">Wearable Sensors</h5>
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            {% if session['wbsensors_ids'] %}
+                                            {% for sensor_id in session['wbsensors_ids'] %}
+                                            <tr>
+                                                <td>{{ sensor_id }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                            {% else %}
+                                            <tr>
+                                                <td class="text-muted">No wearable sensors available.</td>
+                                            </tr>
+                                            {% endif %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+    </div>
+
+    {% endblock %}

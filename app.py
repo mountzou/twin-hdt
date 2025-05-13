@@ -3,18 +3,22 @@ import requests
 import uuid
 import os
 
-from flask import Flask, render_template, redirect, url_for, session, jsonify, abort, request
+import joblib
+import pandas as pd
+
+from flask import Flask, render_template, redirect, url_for, session, jsonify, abort, request, current_app
 from authlib.integrations.flask_client import OAuth
 
 from sensor_data import get_sensor_historical_data, get_sensor_historical_latest_data
 from config_env import HEADERS_WB, API_DPM_BASE_URL, WEARABLE_ID
 from utils import http_dmp_request
-
-app = Flask(__name__)
-app.secret_key = 'your-secret-key-here'
+from utils_auth import validate_id_token, store_user_claims, store_sensor_ids
 
 from mqtt_handler import start_mqtt_thread, mqtt_messages, init_mqtt
 from flask_socketio import SocketIO
+
+app = Flask(__name__)
+app.secret_key = os.urandom(24)
 
 socketio = SocketIO(app, cors_allowed_origins="*", manage_session=False)
 init_mqtt(socketio)
@@ -24,10 +28,15 @@ keyrock = oauth.register(
     name='keyrock',
     client_id=os.getenv('OAUTH2_CLIENT_ID'),
     client_secret=os.getenv('OAUTH2_CLIENT_SECRET'),
-    access_token_url=os.getenv('OAUTH2_ACCESS_TOKEN_URL'),
-    authorize_url=os.getenv('OAUTH2_AUTHORIZE_URL'),
-    client_kwargs={'scope': 'openid profile email'},
+    server_metadata_url=f"{os.getenv('OIDC_ISSUER_URL')}/.well-known/openid-configuration",
+    client_kwargs={'scope': 'openid profile email jwt'},
 )
+
+
+@app.context_processor
+def inject_user():
+    return dict(session=session)
+
 
 ''' Register routes that handle HTTP errors '''
 from routes_error import register_error_routes
@@ -57,7 +66,6 @@ def login_required(f):
 @app.route('/dashboard/')
 @login_required
 def index():
-    print(f"Session Data: {session}")
     return render_template('index.html', messages=mqtt_messages)
 
 
@@ -80,6 +88,79 @@ def health_recommendations():
 @login_required
 def activity_status():
     return render_template('activity-status.html')
+
+
+@app.route('/profile/')
+@login_required
+def profile():
+    return render_template('profile.html')
+
+
+@app.route('/predict_co2/', methods=['POST'])
+@login_required
+def predict_co2():
+    data = request.get_json()
+
+    co2_mean = data.get('co2_mean')
+    co2_std = data.get('co2_std')
+    co2_diff = data.get('co2_diff')
+    co2_latest = data.get('co2_latest')
+
+    X_new = pd.DataFrame([{
+        'co2': co2_latest,
+        'co2_diff1': 50,
+        'co2_std': co2_std,
+        'co2_avg': co2_mean
+    }])
+
+    model1 = joblib.load('models_ml/co2_pred_15m.pkl')
+    prediction = model1.predict(X_new)
+    predicted_co2 = float(prediction[0])
+
+    return jsonify({'predicted_co2': round(predicted_co2, 2)})
+
+
+@app.route('/predict_co2_hourly/')
+@login_required
+def predict_co2_hourly():
+    base_url = 'http://twinairdmp.online:8669/v2/entities/urn:ngsi-ld:hwsensors:16866'
+    headers = {
+        'Fiware-Service': session['tenant'],
+        'X-Auth-Token': '4579ea622cb713071987b603624069411d6f0338'
+    }
+
+    print(session)
+
+    attributes = ['co2', 'noiseLevel', 'light']
+    results = {}
+
+    for attr in attributes:
+        params = {
+            'type': 'hwsensors',
+            'lastN': 2,
+            'attrs': attr,
+            'aggrPeriod': 'hour',
+            'aggrMethod': 'avg',
+        }
+
+        response = requests.get(base_url, headers=headers, params=params)
+
+        results[attr] = {}
+
+        if response.status_code == 200:
+            try:
+                data = response.json()
+                values = data['attributes'][0]['values']
+                results[attr]['0h'] = values[-1] if len(values) >= 1 else None
+                results[attr]['1h'] = values[-2] if len(values) >= 2 else None
+            except (KeyError, IndexError):
+                results[attr]['0h'] = None
+                results[attr]['1h'] = None
+        else:
+            results[attr]['0h'] = f'Error {response.status_code}'
+            results[attr]['1h'] = f'Error {response.status_code}'
+
+    return jsonify(results)
 
 
 with open('data/pollutants_info.json', 'r') as file:
@@ -107,6 +188,7 @@ def air_pollutant(pollutant):
 @login_required
 def mqtt_messages_route():
     historical_data = get_sensor_historical_latest_data()
+    print(historical_data)
     return render_template('mqtt_messages.html', messages=mqtt_messages, historical_data=historical_data)
 
 
@@ -125,8 +207,14 @@ def get_pollutants_historical_data():
 
 @app.route('/get_data_wb_device_latest', methods=['POST'])
 def get_data_wb_device_latest():
+    # Get request data
+    request_data = request.get_json(silent=True) or {}
+
+    # Extract lastN parameter from request, with a default value of 50
+    last_n = request_data.get('lastN', 50)
+
     url = f'{API_DPM_BASE_URL}/entities/urn:ngsi-ld:wsensors:{WEARABLE_ID}'
-    query_params = {'lastN': 20}
+    query_params = {'lastN': last_n}
 
     latest_data_wb_device = http_dmp_request(url, header=HEADERS_WB, params=query_params)
 
@@ -137,45 +225,50 @@ def get_data_wb_device_latest():
 @app.route('/login')
 def login():
     session['nonce'] = str(uuid.uuid4())
-    session['state'] = str(uuid.uuid4())
+    session['state'] = "oic"
     redirect_uri = url_for('authorize', _external=True)
 
     return keyrock.authorize_redirect(
         redirect_uri,
+        prompt='login',
         state=session['state'],
-        nonce=session['nonce']
+        nonce=session['nonce'],
+        response_type='id_token',
     )
 
 
 @app.route('/authorize')
 def authorize():
+    # Validating the ID token and decode user information
+    claims = validate_id_token(request.args.get('id_token'), session['nonce'])
+
+    # Check if the state exists in the session
     if 'state' not in session:
-        return "State is missing in session!", 400
+        return "State is missing in session!", 400  # Handle missing state
 
+    # Check if the state matches
     if request.args.get('state') != session['state']:
-        return "State does not match!", 400
+        return "State does not match!", 400  # Handle the error as you see fit
 
-    token = keyrock.authorize_access_token()
+    if not claims:
+        return "ID Token validation failed!", 400
 
-    if not token.get('access_token'):
-        return "Access token is missing!", 400
-
-    headers = {'Authorization': f"Bearer {token['access_token']}"}
-    response = requests.get(os.getenv('OAUTH2_USERINFO_URL'), headers=headers)
-
-    if response.status_code == 200:
-        user_info = response.json()
-        session['email'] = user_info['email']
-    else:
-        return f"Failed to fetch user info: {response.status_code} - {response.text}"
+    # Store in session variable the user's information
+    store_user_claims(claims)
+    # Store in session variable the tenant's sensor information
+    store_sensor_ids(session['tenant'])
 
     return redirect(url_for('index'))
 
 
-@app.route('/logout/')
+@app.route('/logout')
 def logout():
+    """
+    logout route which clears the session and redirects to the home page
+    """
     session.clear()
     request_url = f"{os.getenv('OAUTH2_LOGOUT_URL')}?_method=DELETE&client_id={os.getenv('OAUTH2_CLIENT_ID')}"
+    print(request_url)
     return redirect(request_url)
 
 
