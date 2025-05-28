@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <meta http-equiv="refresh" content="3;url={{ logout_url }}">
+    <title>Tenant Error - TwinAIR.</title>
+    <!-- CSS files -->
+    <link href="{{ url_for('static', filename='css/tabler.min.css') }}" rel="stylesheet"/>
+    <link href="{{ url_for('static', filename='css/tabler-vendors.min.css') }}" rel="stylesheet"/>
+    <link href="{{ url_for('static', filename='css/demo.min.css') }}" rel="stylesheet"/>
+    <link href="{{ url_for('static', filename='css/twinair.css') }}" rel="stylesheet"/>
+</head>
+<body class=" border-top-wide border-primary d-flex flex-column">
+<div class="page page-center">
+    <div class="container-tight py-4">
+        <div class="empty">
+            <div class="empty-header pb-4">ERROR</div>
+            <p class="empty-title"><h3>You are not associated with a valid tenant. Logging out.</h3></p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

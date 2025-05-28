@@ -6,7 +6,7 @@ import os
 import joblib
 import pandas as pd
 
-from flask import Flask, render_template, redirect, url_for, session, jsonify, abort, request, current_app
+from flask import Flask, render_template, redirect, url_for, session, jsonify, abort, request, flash, current_app
 from authlib.integrations.flask_client import OAuth
 
 from sensor_data import get_sensor_historical_data, get_sensor_historical_latest_data
@@ -250,8 +250,15 @@ def authorize():
     if request.args.get('state') != session['state']:
         return "State does not match!", 400  # Handle the error as you see fit
 
+    # Check if claims exists
     if not claims:
         return "ID Token validation failed!", 400
+
+    # Check if the user is associated with tenant, otherwise force logout
+    if not claims['extra'].get('tenant'):
+        session.clear()
+        logout_url = f"{os.getenv('OAUTH2_LOGOUT_URL')}?_method=DELETE&client_id={os.getenv('OAUTH2_CLIENT_ID')}"
+        return render_template('_error/error_tenant.html', logout_url=logout_url)
 
     # Store in session variable the user's information
     store_user_claims(claims)
@@ -268,7 +275,6 @@ def logout():
     """
     session.clear()
     request_url = f"{os.getenv('OAUTH2_LOGOUT_URL')}?_method=DELETE&client_id={os.getenv('OAUTH2_CLIENT_ID')}"
-    print(request_url)
     return redirect(request_url)
 
 
