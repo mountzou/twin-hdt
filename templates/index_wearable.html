@@ -1,0 +1,85 @@
+<!-- Placeholder alert -->
+<div id="wearable-alert"
+     class="alert alert-info d-flex align-items-center justify-content-center gap-2"
+     role="alert">
+  <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
+  <div>
+    Searching for live wearable data (device <strong id="wearable-device-id">eui-0080e1150510b546</strong>)…
+    <span class="visually-hidden">Loading…</span>
+  </div>
+</div>
+
+<!-- Hidden cards -->
+<div id="wearable-cards" class="row row-cols-1 row-cols-md-4 g-3 d-none">
+  <!-- Heart Rate -->
+  <div class="col">
+    <div class="card h-100 text-center">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <strong>Heart Rate</strong>
+        <span id="hr-conf" class="badge conf-badge conf-neutral">–</span>
+      </div>
+      <div class="card-body d-flex flex-column justify-content-center align-items-center">
+        <div class="d-flex align-items-baseline gap-2">
+          <div id="hr-value" class="display-6 fw-semibold mb-0 value-anim">–</div>
+          <small class="text-muted">bpm</small>
+        </div>
+        <div class="text-muted small mt-2">Updated: <span id="hr-time">–</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SpO₂ -->
+  <div class="col">
+    <div class="card h-100 text-center">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <strong>SpO₂</strong>
+        <span id="spo2-conf" class="badge conf-badge conf-neutral">–</span>
+      </div>
+      <div class="card-body d-flex flex-column justify-content-center align-items-center">
+        <div class="d-flex align-items-baseline gap-2">
+          <div id="spo2-value" class="display-6 fw-semibold mb-0 value-anim">–</div>
+          <small class="text-muted">%</small>
+        </div>
+        <div id="spo2-warning" class="alert alert-warning py-1 px-2 mt-2 d-none small w-100">
+          Low signal quality — values may be unreliable.
+        </div>
+        <div class="text-muted small mt-2">Updated: <span id="spo2-time">–</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Total Energy -->
+  <div class="col">
+    <div class="card h-100 text-center">
+      <div class="card-header"><strong>Total Energy</strong></div>
+      <div class="card-body d-flex flex-column justify-content-center align-items-center">
+        <div class="d-flex align-items-baseline gap-2">
+          <div id="energy-value" class="display-6 fw-semibold mb-0 value-anim">–</div>
+          <small class="text-muted">kcal</small>
+        </div>
+        <div class="text-muted small mt-2">Updated: <span id="energy-time">–</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Total Steps -->
+  <div class="col">
+    <div class="card h-100 text-center">
+      <div class="card-header"><strong>Total Steps</strong></div>
+      <div class="card-body d-flex flex-column justify-content-center align-items-center">
+        <div class="d-flex align-items-baseline gap-2">
+          <div id="steps-value" class="display-6 fw-semibold mb-0 value-anim">–</div>
+          <small class="text-muted">steps</small>
+        </div>
+        <div class="text-muted small mt-2">Updated: <span id="steps-time">–</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footnote explanation (hidden until cards appear) -->
+<div id="wearable-footnote" class="text-end text-muted small mt-2" style="display:none;">
+  * The percentage shown indicates the confidence interval for the measurement.
+</div>
+
+<script src="{{ url_for('static', filename='js/index-wb-physiological.js') }}"></script>

@@ -25,7 +25,7 @@
                 <div class="col-auto ms-auto">
                     <!-- Update time -->
                     <div class="page-update-time">
-                        Last updated: <span id="updateTime"></span>
+                        Last update: <span id="updateTime"></span>
                     </div>
                 </div>
             </div>
@@ -41,17 +41,28 @@
 
     {% import 'index-macros.html' as macros %}
 
-    {{ macros.jumbotron('Indoor Air Pollutants', 'Track indoor air pollutants captured in your immediate surroundings by the portable device.' ) }}
+    {{ macros.jumbotron('Indoor Air Quality', 'Monitor IAQ conditions in your immediate surroundings.' ) }}
 
     <div class="page-body">
         <div class="container-xl">
             {% include 'index-pred-co2.html' %}
         </div>
         {{ macros.chart('index-chart-co2') }}
-        {{ macros.chart('index-chart-tvoc') }}
+        <div class="container-xl">
+            {% include 'index-pred-pm25.html' %}
+        </div>
         {{ macros.chart('index-chart-pm25') }}
+        {{ macros.chart('index-chart-tvoc') }}
         {{ macros.chart('index-chart-temp') }}
         {{ macros.chart('index-chart-rhum') }}
+    </div>
+
+    {{ macros.jumbotron('Physiological Parameters', 'Monitor your physiological signals.' ) }}
+
+    <div class="page-body">
+        <div class="container-xl py-2">
+            {% include "index_wearable.html" %}
+        </div>
     </div>
 
 </div>

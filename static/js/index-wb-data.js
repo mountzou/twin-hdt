@@ -32,7 +32,7 @@ fetch('/get_data_wb_device_latest', {
         'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-        lastN: 10
+        lastN: 20
     })
 })
 .then(response => {
@@ -47,7 +47,7 @@ fetch('/get_data_wb_device_latest', {
 
     // Extract attribute values using find() - cleaner and more explicit
     const tvocAttribute = data.attributes.find(attr => attr.attrName === 'tvoc');
-    const co2Attribute = data.attributes.find(attr => attr.attrName === 'co2');
+    const co2Attribute  = data.attributes.find(attr => attr.attrName === 'co2');
     const pm25Attribute = data.attributes.find(attr => attr.attrName === 'pm25');
     const tempAttribute = data.attributes.find(attr => attr.attrName === 'temperature');
     const rhumAttribute = data.attributes.find(attr => attr.attrName === 'relativeHumidity');
@@ -79,7 +79,29 @@ fetch('/get_data_wb_device_latest', {
         ? rhumAttribute.values.map(value => Math.min(value, rhumMaxValue))
         : [];
 
-    processCO2Forecast(co2Values, rawTimestamps, 'co2-pred');
+    if (co2Values.length > 0) {
+      const win = co2Values.slice(-10);
+      const latest = win[win.length - 1];
+
+      const mean = win.reduce((a, b) => a + b, 0) / win.length;
+      const variance = win.reduce((a, b) => a + (b - mean) ** 2, 0) / win.length;
+      const std = Math.sqrt(variance);
+
+      const band = Math.round(std * 2);
+      document.getElementById("co2-pred-1").textContent =
+        `${Math.round(latest)} ${POLLUTANT_UNITS.CO2} ± ${band} ${POLLUTANT_UNITS.CO2}`;
+    }
+
+    getCO2Prediction(co2Values, rawTimestamps);
+
+    getPM25Prediction(pm25Values)
+    .then(pred => {
+        if (pred !== null) {
+            console.log('Predicted PM2.5:', pred);
+        } else {
+            console.log('Prediction failed.');
+        }
+    });
 
     const chartStyles = {
         toolbar: styleToolbar,
@@ -89,11 +111,21 @@ fetch('/get_data_wb_device_latest', {
         marker: styleMarker
     };
 
-    chartCO2 = initializeChart('CO2', co2Values, '#index-chart-co2', co2Threshold, timestamp, chartStyles, POLLUTANT_UNITS.CO2);
+    chartCO2  = initializeChart('CO2', co2Values, '#index-chart-co2', co2Threshold, timestamp, chartStyles, POLLUTANT_UNITS.CO2);
     chartTVOC = initializeChart('TVOC', tvocValues, '#index-chart-tvoc', tvocThreshold, timestamp, chartStyles, POLLUTANT_UNITS.TVOC);
     chartPM25 = initializeChart('PM2.5', pm25Values, '#index-chart-pm25', pm25Threshold, timestamp, chartStyles, POLLUTANT_UNITS.PM25);
     chartTemp = initializeChart('Temperature', tempValues, '#index-chart-temp', tempThreshold, timestamp, chartStyles, POLLUTANT_UNITS.TEMP);
     chartRHum = initializeChart('Relative Humidity', rhumValues, '#index-chart-rhum', rhumThreshold, timestamp, chartStyles, POLLUTANT_UNITS.RHUM);
+
+    function showChartStatus(chartId, statusText) {
+        const statusDiv = document.getElementById(chartId + '-status');
+        const labelSpan = document.getElementById(chartId + '-status-label');
+        if (statusDiv) statusDiv.style.display = 'flex';
+        if (labelSpan) labelSpan.innerText = statusText;
+    }
+
+    showChartStatus('index-chart-co2', 'Good');
+    showChartStatus('index-chart-pm25', 'Good');
 
 })
 .catch(error => {

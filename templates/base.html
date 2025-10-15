@@ -15,6 +15,10 @@
     <!-- Import FontAwesome stylesheets -->
     <link href="{{ url_for('static', filename='css/fontawesome.all.min.css') }}" rel="stylesheet">
 
+    <!-- Import ApexChart library -->
+    <script src="{{ url_for('static', filename='js/apex-charts.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/apex-chart-styles.js') }}"></script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
 
 </head>
@@ -53,13 +57,9 @@
 <script src="{{ url_for('static', filename='js/util-chart.js') }}"></script>
 
 <script src="{{ url_for('static', filename='js/index-predict-co2.js') }}"></script>
-
-<!-- Import ApexChart library -->
-<script src="{{ url_for('static', filename='js/apex-charts.min.js') }}"></script>
-<script src="{{ url_for('static', filename='js/apex-chart-styles.js') }}"></script>
+<script src="{{ url_for('static', filename='js/index-predict-pm25.js') }}"></script>
 
 <script src="{{ url_for('static', filename='js/index-wb-data.js') }}"></script>
-<script src="{{ url_for('static', filename='js/index-pred-co2.js') }}"></script>
 
 <!--<script>-->
 <!--    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {-->

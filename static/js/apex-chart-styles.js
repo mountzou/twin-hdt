@@ -1,13 +1,13 @@
 const styleMarker = {
-    size: 2,
-    shape: 'square',
+    size: 1,
+    shape: 'circle',
 };
 
 const styleStroke = {
     curve: 'monotoneCubic',
     width: 2,
     dashArray: 0,
-    lineCap: 'butt',
+    lineCap: 'square'
 }
 
 const styleAxis = {
