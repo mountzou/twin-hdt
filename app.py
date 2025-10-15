@@ -404,5 +404,7 @@ def logout():
 
 
 if __name__ == "__main__":
+    #comm
     start_mqtt_thread()
     socketio.run(app, debug=True, allow_unsafe_werkzeug=True, port=5656)
+
