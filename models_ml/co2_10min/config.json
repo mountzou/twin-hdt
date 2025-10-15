@@ -1,0 +1,5 @@
+{
+  "lookback": 4,
+  "horizon": 10,
+  "step": 14
+}
