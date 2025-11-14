@@ -1,11 +1,11 @@
 const styleMarker = {
-    size: 1,
+    size: 0,
     shape: 'circle',
 };
 
 const styleStroke = {
     curve: 'monotoneCubic',
-    width: 2,
+    width: 2.5,
     dashArray: 0,
     lineCap: 'square'
 }

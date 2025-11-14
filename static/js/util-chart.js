@@ -13,15 +13,15 @@ function initializeChart(pollutant, values, containerId, threshold, timestamps, 
     const minValue = Math.min(...values) - 0.1 * Math.min(...values);
     const maxValue = Math.max(...values) + 0.1 * Math.max(...values);
 
-    // Create y-axis title based on whether a unit is provided
+    // Create y-axis label in the form of `pollutant (units)`
     const yAxisTitle = unit
         ? `${pollutant} (${unit})`
-        : `${pollutant} Index`;
+        : `${pollutant}`;
 
-    // Create formatter function based on whether a unit is provided
+    // Create formatter function to round pollutant values to 1 decimal
     const valueFormatter = unit
-        ? value => `${value.toFixed(2)} ${unit}`
-        : value => value.toFixed(2);
+        ? value => `${value.toFixed(1)} ${unit}`
+        : value => value.toFixed(1);
 
     const options = {
         chart: {
@@ -36,10 +36,11 @@ function initializeChart(pollutant, values, containerId, threshold, timestamps, 
             name: pollutant,
             data: values
         }],
+        colors: ['#206bc4'],
         xaxis: {
             categories: timestamps,
             title: {
-                text: 'Date',
+                text: '',
                 style: styles.axis
             },
             labels: {
@@ -52,7 +53,7 @@ function initializeChart(pollutant, values, containerId, threshold, timestamps, 
             tooltip: {
                 enabled: false
             },
-            tickAmount: 10,
+            tickAmount: 8,
         },
         yaxis: {
             title: {
@@ -98,18 +99,16 @@ function updateChart(chart, name, values, timestamps, threshold, styles, unit = 
     if (!chart) return;
 
     // Calculate min and max values
-    const minValue = Math.min(...values);
-    const maxValue = Math.max(...values);
+    const minVal = Math.min(...values);
+    const maxVal = Math.max(...values);
+    const yMin   = minVal - 0.1 * minVal;
+    const yMax   = maxVal + 0.1 * maxVal;
 
     // Create formatter function based on whether a unit is provided
-    const valueFormatter = unit
-        ? value => `${value.toFixed(2)} ${unit}`
-        : value => value.toFixed(2);
+    const valueFormatter = unit ? value => `${value.toFixed(1)} ${unit}`: value => value.toFixed(1);
 
     // Create title based on whether it's an index or has units
-    const title = unit
-        ? `${name} (${unit})`
-        : `${name} Index`;
+    const title = unit ? `${name} (${unit})` : `${name} Index`;
 
     chart.updateSeries([{
         name: name,
@@ -119,59 +118,34 @@ function updateChart(chart, name, values, timestamps, threshold, styles, unit = 
     chart.updateOptions({
         xaxis: {
             categories: timestamps,
-            title: {
-                text: 'Date',
-                style: styles.axis
-            },
-            labels: {
-                formatter: function(value) {
-                    return value;
-                },
-                rotate: 0,
-                style: styles.ticks
-            },
-            tooltip: {
-                enabled: false
-            },
-            tickAmount: 10
+            title: { text: '', style: styles.axis },
+            labels: { formatter: v => v, rotate: 0, style: styles.ticks },
+            tooltip: { enabled: false },
+            tickAmount: 9,
         },
         yaxis: {
-            title: {
-                text: title,
-                style: styles.axis
-            },
-            min: minValue,
-            max: maxValue + 5,
-            labels: {
-                formatter: valueFormatter,
-                style: styles.ticks
-            },
-            tickAmount: 6,
+            title: { text: title, style: styles.axis },
+            min: yMin,
+            max: yMax,
+            labels: { formatter: valueFormatter, style: styles.ticks },
+            tickAmount: 5,
         },
         stroke: styles.stroke,
-        markers: {
-            size: 2
-        },
+        markers: styles.marker,
         tooltip: {
             shared: true,
             intersect: false,
             fillSeriesColor: false,
-            y: {
-                formatter: valueFormatter
-            }
+            y: { formatter: valueFormatter }
         },
         annotations: {
             yaxis: [{
                 y: threshold,
                 borderColor: 'red',
-                label: {
-                    borderColor: 'red',
-                    style: { color: '#fff', background: 'red' },
-                    text: 'Upper Acceptable Threshold'
-                }
+                label: { borderColor: 'red', style: { color: '#fff', background: 'red' }, text: 'Upper Acceptable Threshold' }
             }]
-        }
-    });
+    }
+});
 }
 
 /**
@@ -223,7 +197,7 @@ function updateCharts() {
         axis: styleAxis,
         ticks: styleTicks,
         stroke: styleStroke,
-        marker: styleMarker
+        marker: styleMarker,
     };
 
     // Update each chart

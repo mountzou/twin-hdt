@@ -1,0 +1,84 @@
+{
+  "version": "1.1.1",
+  "metadata": {
+    "name": "HDT IAQ Policy",
+    "locale": "en-US",
+    "notes": "Breakpoint values are placeholders; replace with your official policy if needed.",
+    "defaults": {
+      "averaging_windows_ms": { "1h": 3600000, "8h": 28800000, "24h": 86400000 },
+      "rounding_decimals": 2,
+      "overall_rule": "max_severity",
+      "sensitive_groups_bump": { "enabled": false, "pollutants": ["pm25", "tvoc"], "delta": 1 }
+    }
+  },
+  "labels": ["good", "moderate", "unhealthy", "very_unhealthy"],
+  "level_styles": {
+    "good":           { "color": "green",  "icon": "happy.svg" },
+    "moderate":       { "color": "yellow", "icon": "neutral.svg" },
+    "unhealthy":      { "color": "orange", "icon": "sad.svg" },
+    "very_unhealthy": { "color": "red",    "icon": "warning.svg" }
+  },
+  "overall": {
+    "method": "max_severity",
+    "tie_breaker": "union_actions_from_worst_pollutants",
+    "output_fields": ["overall_severity", "overall_label", "reasons", "actions"]
+  },
+  "pollutants": [
+    {
+      "id": "co2",
+      "name": "CO₂",
+      "unit": "ppm",
+      "source": "HDT baseline",
+      "breakpoints": {
+        "1h": [
+          { "le": 800,        "label": "good",      "severity": 0 },
+          { "le": 1200,       "label": "moderate",  "severity": 1 },
+          { "le": 1000000000, "label": "poor",      "severity": 2 }
+        ],
+        "8h": [
+          { "le": 800,        "label": "good",      "severity": 0 },
+          { "le": 1200,       "label": "moderate",  "severity": 1 },
+          { "le": 1000000000, "label": "poor",      "severity": 2 }
+        ],
+        "24h": [
+          { "le": 800,        "label": "good",      "severity": 0 },
+          { "le": 1200,       "label": "moderate",  "severity": 1 },
+          { "le": 1000000000, "label": "poor",      "severity": 2 }
+        ]
+      },
+      "effects": {
+        "good":      { "effect": "Within desirable range for alertness and cognition.", "action": "No immediate action." },
+        "moderate":  { "effect": "Possible mild reduction in alertness.",               "action": "Increase outdoor air or brief ventilation." },
+        "poor":      { "effect": "Drowsiness or headache possible for some.",           "action": "Strengthen ventilation or raise outdoor air setpoint." }
+      }
+    },
+    {
+      "id": "pm25",
+      "name": "PM2.5",
+      "unit": "µg/m³",
+      "source": "HDT baseline (placeholders; align with your policy/WHO for 24h)",
+      "breakpoints": {
+        "1h": [
+          { "le": 15,         "label": "good",      "severity": 0 },
+          { "le": 35,         "label": "moderate",  "severity": 1 },
+          { "le": 1000000000, "label": "poor",      "severity": 3 }
+        ],
+        "8h": [
+          { "le": 15,         "label": "good",      "severity": 0 },
+          { "le": 35,         "label": "moderate",  "severity": 1 },
+          { "le": 1000000000, "label": "poor",      "severity": 3 }
+        ],
+        "24h": [
+          { "le": 15,         "label": "good",      "severity": 0 },
+          { "le": 35,         "label": "moderate",  "severity": 1 },
+          { "le": 1000000000, "label": "poor",      "severity": 3 }
+        ]
+      },
+      "effects": {
+        "good":      { "effect": "Low exposure to fine particles.",                         "action": "No immediate action." },
+        "moderate":  { "effect": "Mild burden; sensitive groups may experience irritation.", "action": "Reduce sources; provide basic ventilation." },
+        "poor":      { "effect": "Higher risk of irritation or respiratory symptoms.",       "action": "Use HEPA filtration; strong ventilation; avoid sources." }
+      }
+    }
+  ]
+}

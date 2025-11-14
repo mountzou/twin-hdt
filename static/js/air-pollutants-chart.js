@@ -8,6 +8,9 @@ function initializeChart(times, values) {
     let minValue = Math.min(...values);
     let maxValue = Math.max(...values);
 
+    // Decide how many labels we want on the x-axis (e.g. ~8 visible labels)
+    const labelStep = Math.max(1, Math.floor(times.length / 8));
+
     // Set the configuration options of the apexChart line chart.
     var options = {
         chart: {
@@ -29,7 +32,12 @@ function initializeChart(times, values) {
                 style: styleAxis
             },
             labels: {
-                formatter: function(value, timestamp) {
+                // value = category (ISO string or timestamp), index = position in categories
+                formatter: function (value, timestamp, index) {
+                    // hide most labels, keep only every labelStep-th
+                    if (index % labelStep !== 0) {
+                        return '';
+                    }
                     const date = new Date(value);
                     return `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
                 },
@@ -37,8 +45,9 @@ function initializeChart(times, values) {
                 style: styleTicks
             },
             tooltip: {
-              enabled: false
+                enabled: false
             },
+            // tickAmount is now more of a hint; labels formatter controls visibility
             tickAmount: 10
         },
         yaxis: {
@@ -49,7 +58,7 @@ function initializeChart(times, values) {
             min: minValue,
             max: maxValue,
             labels: {
-                formatter: function(value) {
+                formatter: function (value) {
                     return `${value.toFixed(2)} ${pollutantUnit}`;
                 },
                 style: styleTicks
@@ -65,7 +74,7 @@ function initializeChart(times, values) {
     window.chart.render();
 }
 
-$(document).ready(function() {
+$(document).ready(function () {
     let chartInitialized = false;
 
     // Calculate the default date range: from previous day 00:00 to previous day 23:00
@@ -87,7 +96,7 @@ $(document).ready(function() {
         defaultDate: [startOfYesterday, endOfYesterday]
     });
 
-    $('#sensor-data-form').on('submit', function(event) {
+    $('#sensor-data-form').on('submit', function (event) {
         event.preventDefault();
 
         const fromDate = datePicker.selectedDates[0].toISOString();
@@ -113,7 +122,7 @@ $(document).ready(function() {
             method: 'POST',
             contentType: 'application/json',
             data: JSON.stringify(params),
-            success: function(response) {
+            success: function (response) {
                 console.log('Response:', response);
 
                 const times = response.index;
@@ -126,16 +135,24 @@ $(document).ready(function() {
                     initializeChart(times, values);
                     chartInitialized = true;
                 } else {
-                    minValue = Math.min(...values);
-                    maxValue = Math.max(...values);
+                    const minValue = Math.min(...values);
+                    const maxValue = Math.max(...values);
+
+                    // recompute labelStep for the new number of points
+                    const labelStep = Math.max(1, Math.floor(times.length / 8));
+
                     window.chart.updateOptions({
                         xaxis: {
                             categories: times,
                             labels: {
-                                formatter: function(value, timestamp) {
+                                formatter: function (value, timestamp, index) {
+                                    if (index % labelStep !== 0) {
+                                        return '';
+                                    }
                                     const date = new Date(value);
                                     return `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
                                 },
+                                style: styleTicks
                             },
                             tickAmount: 10
                         },
@@ -151,7 +168,7 @@ $(document).ready(function() {
                             min: minValue,
                             max: maxValue,
                             labels: {
-                                formatter: function(value) {
+                                formatter: function (value) {
                                     return `${value.toFixed(2)} ${pollutantUnit}`;
                                 },
                                 style: styleTicks
@@ -161,7 +178,7 @@ $(document).ready(function() {
                     });
                 }
             },
-            error: function(error) {
+            error: function (error) {
                 console.error('Error:', error);
             }
         });

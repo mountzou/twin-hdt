@@ -31,8 +31,8 @@ def store_user_claims(claims):
     session['username'] = claims['username']
     session['email'] = claims['email']
     session['tenant'] = claims['extra']['tenant']
-    session['lastName'] = claims['extra']['lastName']
-    session['firstName'] = claims['extra']['firstName']
+    session['lName'] = claims['extra']['lastName']
+    session['fName'] = claims['extra']['firstName']
     session['admin'] = claims['extra']['admin']
 
     return None

@@ -101,18 +101,30 @@ h1 {
 
 .chart-status-overlay {
     position: absolute;
-    top: 30%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+
+    /* TOP-RIGHT WITH PERCENTAGES */
+    top: 10%;
+    right: 5%;
+
+    /* Clear previous centering */
+    left: auto;
+    transform: none;
+
+    font-size: 1.25em;
+
     z-index: 10;
     background: none;
-    font-size: 1.2rem;
     font-weight: 450;
     color: #3a4a59;
     pointer-events: none;
-    display: none;  /* Hidden by default */
-    align-items: center;
-    gap: 0.5rem;
+
+    display: flex;
+    flex-direction: row;     /* dot left, text right */
+    align-items: flex-start; /* keep top-aligned */
+    gap: 0.4rem;
+
+    text-align: right;
+
     backdrop-filter: blur(2px);
     -webkit-backdrop-filter: blur(6px);
 }
@@ -180,4 +192,32 @@ h1 {
 }
 .value-anim {
     transition: color 200ms ease, opacity 200ms ease;
+}
+
+.iaq-side-panel {
+    min-width: 160px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.status-dot {
+    width: 10px;
+    height: 10px;
+    display: inline-block;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+}.iaq-side-panel {
+    min-width: 160px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.status-dot {
+    width: 10px;
+    height: 10px;
+    display: inline-block;
+    border-radius: 50%;
+    margin-right: 0.5rem;
 }
