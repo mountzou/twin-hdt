@@ -6,8 +6,6 @@ import requests
 def http_dmp_request(url, header, params):
     response = requests.get(url, headers=header, params=params)
 
-    print(response.json())
-
     if response.status_code == 200:
         try:
             return response.json()

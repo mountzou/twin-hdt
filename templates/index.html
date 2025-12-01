@@ -3,7 +3,7 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block additional_css %}
-    <!-- Any additional CSS specific to the index page can go here -->
+<!-- Any additional CSS specific to the index page can go here -->
 {% endblock %}
 
 {% block content %}
@@ -44,20 +44,22 @@
     {{ macros.jumbotron('Indoor Air Quality', 'Monitor IAQ conditions in your immediate surroundings.' ) }}
 
     <div class="page-body">
-      <div class="container-xl">
-          {% include 'index-pred-co2.html' %}
-      </div>
+        <div class="container-xl">
+            {% include 'index-pred-co2.html' %}
+        </div>
 
-      {{ macros.chart('index-chart-co2',  'index-chart-co2-status') }}
+        {{ macros.chart('index-chart-co2', 'index-chart-co2-status') }}
 
-      <div class="container-xl">
-          {% include 'index-pred-pm25.html' %}
-      </div>
+        <div class="container-xl">
+            {% include 'index-pred-pm25.html' %}
+        </div>
 
-      {{ macros.chart('index-chart-pm25', 'index-chart-pm25-status') }}
+        {{ macros.chart('index-chart-pm25', 'index-chart-pm25-status') }}
 
-      {{ macros.chart('index-chart-tvoc', 'index-chart-tvoc-status') }}
+        {{ macros.chart('index-chart-tvoc', 'index-chart-tvoc-status') }}
     </div>
+
+        {% include 'index-toast.html' %}
 
 </div>
 

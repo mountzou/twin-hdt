@@ -11,12 +11,11 @@
       "sensitive_groups_bump": { "enabled": false, "pollutants": ["pm25", "tvoc"], "delta": 1 }
     }
   },
-  "labels": ["good", "moderate", "unhealthy", "very_unhealthy"],
+  "labels": ["good", "moderate", "poor"],
   "level_styles": {
-    "good":           { "color": "green",  "icon": "happy.svg" },
-    "moderate":       { "color": "yellow", "icon": "neutral.svg" },
-    "unhealthy":      { "color": "orange", "icon": "sad.svg" },
-    "very_unhealthy": { "color": "red",    "icon": "warning.svg" }
+    "good":       { "color": "green",  "icon": "iaq-good.svg" },
+    "moderate":   { "color": "yellow", "icon": "iaq-moderate.svg" },
+    "poor":       { "color": "orange", "icon": "iaq-unhealthy.svg" }
   },
   "overall": {
     "method": "max_severity",

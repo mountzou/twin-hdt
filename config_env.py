@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+from flask import session
 
 load_dotenv()
 
@@ -33,10 +34,11 @@ DMP_SQL_API_URL = os.getenv('DMP_SQL_API_URL') or (_ for _ in ()).throw(
 
 
 def make_headers(tenant: str) -> dict:
-    if not tenant:
+    if not session['tenant']:
         raise ValueError("Fiware-Service (tenant) is empty or missing")
+    print(session['tenant'], AUTH_TOKEN)
     return {
-        'Fiware-Service': tenant,
+        'Fiware-Service': session['tenant'],
         'X-Auth-Token': AUTH_TOKEN,
     }
 

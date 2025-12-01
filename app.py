@@ -7,8 +7,10 @@ from authlib.integrations.flask_client import OAuth
 
 from sensor_data import get_sensor_historical_data
 from config_env import DMP_SQL_API_URL, DMP_SQL_API_AUTH
+
 from utils_auth import validate_id_token, store_user_claims, store_sensor_ids
 from utils_data import run_cratedb_query, init_mqtt_portable, calculate_avg_iaq
+from utils_pred import predict_co2_arima, predict_pm25_arima
 
 from iaq_policy_loader import load_policy, apply_iaq_policy
 
@@ -136,12 +138,117 @@ def init_mqtt_queue():
     try:
         PORTABLE_ID = session.get('wbsensors_ids', [])[-1]
         WEARABLE_ID = session.get('wbsensors_ids', [])[-1]
+
+        body = request.get_json(silent=True) or {}
+        last_n = body.get('lastN', 10)
+
         cratedb_run_query = lambda q: run_cratedb_query(q, DMP_SQL_API_AUTH, DMP_SQL_API_URL)
-        payload_portable = init_mqtt_portable(PORTABLE_ID, limit=10, sql_runner=cratedb_run_query)
+        payload_portable = init_mqtt_portable(PORTABLE_ID, limit=last_n, sql_runner=cratedb_run_query)
+
+        print("======")
+        print("INIT")
+        print(payload_portable)
+        print("======")
+
         return jsonify(payload_portable)
 
     except Exception as e:
         current_app.logger.exception("init_mqtt_queue error")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/cfd/co2', methods=['GET', 'POST'])
+@login_required
+def api_cfd_co2():
+    try:
+        PORTABLE_ID = session.get('wbsensors_ids', [])[-1]
+
+        body = request.get_json(silent=True) or {}
+        last_n = body.get('lastN', 21)  # if GET, body={}, so default 21
+
+        cratedb_run_query = lambda q: run_cratedb_query(q, DMP_SQL_API_AUTH, DMP_SQL_API_URL)
+        payload_portable = init_mqtt_portable(PORTABLE_ID, limit=last_n, sql_runner=cratedb_run_query)
+
+        print("======")
+        print("CFD")
+        print(payload_portable)
+        print("======")
+
+        cfd_co2_values = next(
+            (attr["values"][:-2] for attr in payload_portable["attributes"] if attr["attrName"] == "co2"),
+            []
+        )
+
+        return jsonify(cfd_co2_values)
+
+    except Exception as e:
+        current_app.logger.exception("cfd_co2 error")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/cfd/pm25', methods=['GET', 'POST'])
+@login_required
+def api_cfd_pm25():
+    try:
+        PORTABLE_ID = session.get('wbsensors_ids', [])[-1]
+
+        body = request.get_json(silent=True) or {}
+        last_n = body.get('lastN', 25)  # if GET, body={}, so default 25
+
+        cratedb_run_query = lambda q: run_cratedb_query(q, DMP_SQL_API_AUTH, DMP_SQL_API_URL)
+        payload_portable = init_mqtt_portable(PORTABLE_ID, limit=last_n, sql_runner=cratedb_run_query)
+
+        cfd_pm25_values = next(
+            (attr["values"][:-6] for attr in payload_portable["attributes"] if attr["attrName"] == "pm25"),
+            []
+        )
+
+        return jsonify(cfd_pm25_values)
+
+    except Exception as e:
+        current_app.logger.exception("cfd_pm25 error")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/pred/co2', methods=['POST'])
+@login_required
+def pred_co2():
+    try:
+        PORTABLE_ID = session.get('wbsensors_ids', [])[-1]
+
+        body = request.get_json(silent=True) or {}
+        last_n = body.get('lastN', 10)
+
+        cratedb_run_query = lambda q: run_cratedb_query(q, DMP_SQL_API_AUTH, DMP_SQL_API_URL)
+        payload_portable = init_mqtt_portable(PORTABLE_ID, limit=last_n, sql_runner=cratedb_run_query)
+
+        co2_predictions = predict_co2_arima(payload_portable)
+
+        return jsonify(co2_predictions)
+
+    except Exception as e:
+        current_app.logger.exception("pred_co2 error")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/pred/pm25', methods=['POST'])
+@login_required
+def pred_pm25():
+    try:
+        PORTABLE_ID = session.get('wbsensors_ids', [])[-1]
+
+        body = request.get_json(silent=True) or {}
+        last_n = body.get('lastN', 10)
+
+        cratedb_run_query = lambda q: run_cratedb_query(q, DMP_SQL_API_AUTH, DMP_SQL_API_URL)
+        payload_portable = init_mqtt_portable(PORTABLE_ID, limit=last_n, sql_runner=cratedb_run_query)
+
+        pm25_predictions = predict_pm25_arima(payload_portable)
+
+        return jsonify(pm25_predictions)
+
+    except Exception as e:
+        current_app.logger.exception("pred_pm25 error")
         return jsonify({"error": str(e)}), 500
 
 
@@ -154,7 +261,7 @@ def iaq_avg():
         cratedb_run_query = lambda q: run_cratedb_query(q, DMP_SQL_API_AUTH, DMP_SQL_API_URL)
 
         iaq_averages = calculate_avg_iaq(PORTABLE_ID, sql_runner=cratedb_run_query)
-        classified   = apply_iaq_policy(iaq_averages, policy)
+        classified = apply_iaq_policy(iaq_averages, policy)
 
         return jsonify({
             "entity_id": PORTABLE_ID,
@@ -164,6 +271,12 @@ def iaq_avg():
     except Exception as e:
         current_app.logger.exception("iaq_avg error")
         return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/devices_portable')
+def get_devices_portable():
+    PORTABLE_ID = session.get('wbsensors_ids', [])[-1]
+    return {"portable_id": PORTABLE_ID}
 
 
 # User authentication routes
@@ -200,6 +313,8 @@ def authorize():
         session.clear()
         logout_url = f"{os.getenv('OAUTH2_URL_LOGOUT')}?_method=DELETE&client_id={os.getenv('OAUTH2_CLIENT_ID')}"
         return render_template('_error/error_tenant.html', logout_url=logout_url)
+
+    print(claims)
 
     # Store in session variable the user's information
     store_user_claims(claims)

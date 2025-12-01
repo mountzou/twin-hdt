@@ -39,9 +39,11 @@ def get_sensor_id_per_tenant(tenant: str):
     return sensors['hwsensors'], sensors['wsensors']
 
 
-def get_sensor_historical_data(tenant: str, params: dict, sensor_id: str):
-    """Ιστορικά για συγκεκριμένο sensor."""
-    headers = make_headers(tenant)
+def get_sensor_historical_data(params: dict, sensor_id: str):
+    headers = {
+        'Fiware-Service': 'trikala',
+        'X-Auth-Token': '4579ea622cb713071987b603624069411d6f0338'
+    }
     url = f"{API_DPM_BASE_URL}/entities/{sensor_id}"
     return http_dmp_request(url, headers, params)
 
