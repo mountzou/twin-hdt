@@ -5,6 +5,7 @@ import requests
 
 from utils import http_dmp_request
 from config_env import make_headers, API_DPM_BASE_URL, API_DPM_BASE_URL_1, SENSOR_ID
+from flask import session
 
 from dotenv import load_dotenv
 
@@ -13,12 +14,9 @@ load_dotenv()
 API_URL = "http://twinairdmp.online:8669/v2/entities"
 
 
-def get_sensor_id_per_tenant(tenant: str):
-    if not tenant:
-        print("Tenant is missing.")
-        return [], []
-
-    headers = make_headers(tenant)
+def get_sensor_id_per_tenant():
+    tenant = session.get('tenant')
+    headers = make_headers()
 
     sensors = {'hwsensors': [], 'wsensors': []}
     for sensor_type in sensors.keys():
@@ -40,25 +38,22 @@ def get_sensor_id_per_tenant(tenant: str):
 
 
 def get_sensor_historical_data(params: dict, sensor_id: str):
-    headers = {
-        'Fiware-Service': 'trikala',
-        'X-Auth-Token': '4579ea622cb713071987b603624069411d6f0338'
-    }
+    headers = make_headers()
     url = f"{API_DPM_BASE_URL}/entities/{sensor_id}"
     return http_dmp_request(url, headers, params)
 
 
-def get_sensor_historical_latest_data(tenant: str):
+def get_sensor_historical_latest_data():
     """Τελευταία Ν για προκαθορισμένο hwsensor (SENSOR_ID από env)."""
-    headers = make_headers(tenant)
+    headers = make_headers()
     url = f"{API_DPM_BASE_URL}/entities/urn:ngsi-ld:hwsensors:{SENSOR_ID}"
     query_params = {'type': 'hwsensors', 'lastN': 20}
     return http_dmp_request(url, headers, query_params)
 
 
-def get_all_sensor_historical_latest_data(tenant: str, sensor_type: str = 'hwsensors', lastN: int = 20):
+def get_all_sensor_historical_latest_data(sensor_type: str = 'hwsensors', lastN: int = 20):
     """Τελευταία Ν για ΟΛΕΣ τις οντότητες τύπου sensor_type."""
-    headers = make_headers(tenant)
+    headers = make_headers()
     url = f"{API_DPM_BASE_URL_1}ngsi-ld/v1/entities/"
     query_params = {'type': sensor_type, 'lastN': lastN}
     return http_dmp_request(url, headers, query_params)

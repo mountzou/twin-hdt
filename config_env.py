@@ -33,15 +33,15 @@ DMP_SQL_API_URL = os.getenv('DMP_SQL_API_URL') or (_ for _ in ()).throw(
     EnvironmentError('Error: DMP_SQL_API_URL is not set in the environment variables'))
 
 
-def make_headers(tenant: str) -> dict:
-    if not session['tenant']:
+def make_headers() -> dict:
+    tenant = session.get('tenant')
+    if not tenant:
         raise ValueError("Fiware-Service (tenant) is empty or missing")
-    print(session['tenant'], AUTH_TOKEN)
     return {
-        'Fiware-Service': session['tenant'],
+        'Fiware-Service': tenant,
         'X-Auth-Token': AUTH_TOKEN,
     }
 
 
-def make_headers_wb(tenant: str) -> dict:
-    return make_headers(tenant)
+def make_headers_wb() -> dict:
+    return make_headers()

@@ -28,6 +28,8 @@ def validate_id_token(id_token, nonce):
 
 
 def store_user_claims(claims):
+    session['authenticated'] = True
+    session['sub'] = claims['sub']
     session['username'] = claims['username']
     session['email'] = claims['email']
     session['tenant'] = claims['extra']['tenant']
@@ -38,7 +40,7 @@ def store_user_claims(claims):
     return None
 
 
-def store_sensor_ids(tenant):
-    hw_sensors, wb_sensors = get_sensor_id_per_tenant(tenant)
+def store_sensor_ids():
+    hw_sensors, wb_sensors = get_sensor_id_per_tenant()
     session['hwsensors_ids'] = hw_sensors
     session['wbsensors_ids'] = wb_sensors
