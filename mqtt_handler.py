@@ -41,9 +41,6 @@ def set_mqtt_topic_portable_device(tenant: str, portable_id: str) -> str:
     TOPIC_PORTABLE = f"{tenant}/wsensors/{portable_id}/keyValues"
     print(f"[mqtt] Topic for portable device {portable_id}: {TOPIC_PORTABLE}")
 
-    # Start the MQTT thread for the TOPIC
-    start_mqtt_thread()
-
     return TOPIC_PORTABLE
 
 

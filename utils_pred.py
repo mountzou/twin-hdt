@@ -4,6 +4,31 @@ import pandas as pd
 from statsmodels.tsa.arima.model import ARIMA
 
 
+def predict_co2_baseline(payload_portable):
+    """
+    Compute a naive 1-minute CO2 baseline forecast from the recent series.
+    """
+    co2_values = next(
+        (attr.get("values", []) for attr in payload_portable.get("attributes", []) if attr.get("attrName") == "co2"),
+        []
+    )
+    if not co2_values:
+        raise ValueError("No CO2 values found in payload_portable.")
+
+    series = pd.Series(co2_values[-10:])
+    latest = float(series.iloc[-1])
+    band = float(series.std(ddof=0) * 2) if len(series) > 1 else 0.0
+
+    return {
+        "co2_pred_1min": {
+            "value": round(latest, 2),
+            "band": round(band, 2),
+            "horizon_minutes": 1,
+            "model": "baseline_std",
+        }
+    }
+
+
 def predict_co2_arima(payload_portable):
     """
     Compute ARIMA-based CO2 forecasts for fixed horizons (5, 10, 15 minutes).
@@ -37,12 +62,10 @@ def predict_co2_arima(payload_portable):
     alpha = 0.05               # 95% CI
 
     # -------- Extract CO2 values --------
-    co2_values = None
-    for attr in payload_portable.get("attributes", []):
-        if attr.get("attrName") == "co2":
-            co2_values = attr.get("values", [])
-            break
-
+    co2_values = next(
+        (attr.get("values", []) for attr in payload_portable.get("attributes", []) if attr.get("attrName") == "co2"),
+        []
+    )
     if not co2_values:
         raise ValueError("No CO2 values found in payload_portable.")
 
@@ -115,12 +138,10 @@ def predict_pm25_arima(payload_portable):
     alpha = 0.05              # 95% CI
 
     # -------- Extract PM2.5 values --------
-    pm25_values = None
-    for attr in payload_portable.get("attributes", []):
-        if attr.get("attrName") == "pm25":
-            pm25_values = attr.get("values", [])
-            break
-
+    pm25_values = next(
+        (attr.get("values", []) for attr in payload_portable.get("attributes", []) if attr.get("attrName") == "pm25"),
+        []
+    )
     if not pm25_values:
         raise ValueError("No PM2.5 values found in payload_portable.")
 

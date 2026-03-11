@@ -1,66 +1,50 @@
-/**
- * Initializes a line chart for a pollutant
- * @param {string} pollutant - The name of the pollutant (e.g., 'CO2')
- * @param {number[]} values - Array of pollutant values
- * @param {string} containerId - DOM selector for chart container
- * @param {number} threshold - Threshold value for pollutant
- * @param {string[]} timestamps - Array of formatted timestamp labels
- * @param {Object} styles - Chart styling options
- * @param {string|null} unit - Unit of measurement (e.g., 'ppm', 'ppb', 'µg/m³') or null if no unit
- * @returns {ApexCharts} The initialized chart object
- */
-function initializeChart(pollutant, values, containerId, threshold, timestamps, styles, unit = null, cfdValues=null) {
-    let minVal = Math.min(...values);
-    let maxVal = Math.max(...values);
-
-    if (cfdValues && Array.isArray(cfdValues) && cfdValues.length > 0) {
-        minVal = Math.min(minVal, ...cfdValues);
-        maxVal = Math.max(maxVal, ...cfdValues);
-    }
-
-    const minValue = minVal - 0.1 * Math.abs(minVal);
-    const maxValue = maxVal + 0.1 * Math.abs(maxVal);
-
-    const yAxisTitle = unit ? `${pollutant} (${unit})` : `${pollutant}`;
-
-    const valueFormatter = unit
+function getChartValueFormatter(unit) {
+    return unit
         ? value => `${value.toFixed(1)} ${unit}`
         : value => value.toFixed(1);
+}
 
+function getChartBounds(values, cfdValues, fallbackValue = 0) {
+    const baselineValues = Array.isArray(values) ? values : [];
+    const comparisonValues = Array.isArray(cfdValues) ? cfdValues : [];
+    const allValues = baselineValues.concat(comparisonValues).filter(Number.isFinite);
+    const seed = allValues.length > 0 ? allValues : [fallbackValue];
+
+    const minVal = Math.min(...seed);
+    const maxVal = Math.max(...seed);
+
+    return {
+        min: minVal - 0.1 * Math.abs(minVal),
+        max: maxVal + 0.1 * Math.abs(maxVal)
+    };
+}
+
+function buildChartSeries(config, values, cfdValues) {
     const series = [
         {
-            name: `Actual ${pollutant}`,
+            name: `${config.label} (Sensor)`,
             data: values
         }
     ];
 
-    if (cfdValues && Array.isArray(cfdValues) && cfdValues.length > 0) {
+    if (config.cfdKey && Array.isArray(cfdValues) && cfdValues.length > 0) {
         series.push({
-            name: `Estimated inhaled ${pollutant} (Human CFD)`,
+            name: `${config.label} (CFD Baseline)`,
             data: cfdValues
         });
     }
 
-    const options = {
-        chart: {
-            type: 'line',
-            height: 350,
-            animations: { enabled: false },
-            toolbar: styles.toolbar
-        },
-        series: series,
-        colors: ['#206bc4', '#ee9b00'],  // sensor, CFD (or keep your palette)
-        legend: {
-            show: true,
-            position: 'top',
-            horizontalAlign: 'left',
-            floating: false,
-            offsetY: 65,
-            offsetX: 85,
-            fontSize: '12px',
-            fontFamily: 'Nunito Sans',
-            fontWeight: 500,
-        },
+    return series;
+}
+
+function buildChartOptions(config, values, timestamps, styles, cfdValues, tickAmount) {
+    const bounds = getChartBounds(values, cfdValues, config.threshold);
+    const valueFormatter = getChartValueFormatter(config.unit);
+    const yAxisTitle = config.unit ? `${config.label} (${config.unit})` : config.label;
+
+    return {
+        series: buildChartSeries(config, values, cfdValues),
+        colors: ['#206bc4', '#ee9b00'],
         xaxis: {
             categories: timestamps,
             title: { text: '', style: styles.axis },
@@ -70,92 +54,12 @@ function initializeChart(pollutant, values, containerId, threshold, timestamps, 
                 style: styles.ticks
             },
             tooltip: { enabled: false },
-            tickAmount: 8,
+            tickAmount: tickAmount,
         },
         yaxis: {
             title: { text: yAxisTitle, style: styles.axis },
-            min: minValue,
-            max: maxValue,
-            labels: { formatter: valueFormatter, style: styles.ticks },
-            tickAmount: 5,
-        },
-        stroke: styles.stroke,
-        markers: styles.marker,
-        tooltip: {
-            shared: true,
-            intersect: false,
-            fillSeriesColor: false,
-            y: { formatter: valueFormatter }
-        },
-    };
-
-    const chart = new ApexCharts(document.querySelector(containerId), options);
-    chart.render();
-    return chart;
-}
-
-/**
- * Updates a specific chart with new data and options
- * @param {ApexCharts} chart - The chart to update
- * @param {string} name - Name of the data series (pollutant)
- * @param {number[]} values - Sensor values
- * @param {string[]} timestamps - X-axis labels
- * @param {number} threshold - Threshold value for annotations
- * @param {Object} styles - Chart styling options
- * @param {string|null} unit - Unit for measurement or null for index
- * @param {number[]|null} cfdValues - Optional CFD baseline values
- */
-function updateChart(chart, name, values, timestamps, threshold, styles, unit = null, cfdValues = null) {
-    if (!chart) return;
-
-    // Base min/max from sensor values
-    let minVal = Math.min(...values);
-    let maxVal = Math.max(...values);
-
-    // Extend min/max if CFD baseline is present
-    if (cfdValues && Array.isArray(cfdValues) && cfdValues.length > 0) {
-        minVal = Math.min(minVal, ...cfdValues);
-        maxVal = Math.max(maxVal, ...cfdValues);
-    }
-
-    const yMin = minVal - 0.1 * Math.abs(minVal);
-    const yMax = maxVal + 0.1 * Math.abs(maxVal);
-
-    const valueFormatter = unit
-        ? value => `${value.toFixed(1)} ${unit}`
-        : value => value.toFixed(1);
-
-    const title = unit ? `${name} (${unit})` : `${name} Index`;
-
-    // Build series: sensor + optional CFD
-    const series = [
-        {
-            name: `${name} (Sensor)`,
-            data: values
-        }
-    ];
-
-    if (cfdValues && Array.isArray(cfdValues) && cfdValues.length > 0) {
-        series.push({
-            name: `${name} (CFD Baseline)`,
-            data: cfdValues
-        });
-    }
-
-    chart.updateSeries(series);
-
-    chart.updateOptions({
-        xaxis: {
-            categories: timestamps,
-            title: { text: '', style: styles.axis },
-            labels: { formatter: v => v, rotate: 0, style: styles.ticks },
-            tooltip: { enabled: false },
-            tickAmount: 9,
-        },
-        yaxis: {
-            title: { text: title, style: styles.axis },
-            min: yMin,
-            max: yMax,
+            min: bounds.min,
+            max: bounds.max,
             labels: { formatter: valueFormatter, style: styles.ticks },
             tickAmount: 5,
         },
@@ -169,7 +73,7 @@ function updateChart(chart, name, values, timestamps, threshold, styles, unit = 
         },
         annotations: {
             yaxis: [{
-                y: threshold,
+                y: config.threshold,
                 borderColor: 'red',
                 label: {
                     borderColor: 'red',
@@ -178,74 +82,89 @@ function updateChart(chart, name, values, timestamps, threshold, styles, unit = 
                 }
             }]
         }
+    };
+}
+
+function initializeChart(config, values, timestamps, styles, cfdValues = []) {
+    const container = document.querySelector(config.containerId);
+    if (!container) return null;
+
+    const options = buildChartOptions(
+        config,
+        values,
+        timestamps,
+        styles,
+        cfdValues,
+        8
+    );
+
+    options.chart = {
+        type: 'line',
+        height: 350,
+        animations: { enabled: false },
+        toolbar: styles.toolbar
+    };
+    options.legend = {
+        show: true,
+        position: 'top',
+        horizontalAlign: 'left',
+        floating: false,
+        offsetY: 65,
+        offsetX: 85,
+        fontSize: '12px',
+        fontFamily: 'Nunito Sans',
+        fontWeight: 500,
+    };
+
+    const chart = new ApexCharts(container, options);
+    chart.render();
+    return chart;
+}
+
+function updateChart(chart, config, values, timestamps, styles, cfdValues = []) {
+    if (!chart) return;
+
+    const options = buildChartOptions(
+        config,
+        values,
+        timestamps,
+        styles,
+        cfdValues,
+        9
+    );
+
+    chart.updateSeries(options.series);
+    chart.updateOptions({
+        xaxis: options.xaxis,
+        yaxis: options.yaxis,
+        stroke: options.stroke,
+        markers: options.markers,
+        tooltip: options.tooltip,
+        annotations: options.annotations
     });
 }
 
-function updateCharts() {
-    // Define all charts to update
-    const chartData = [
-        {
-            chart: chartCO2,
-            name: 'CO2',
-            values: co2Values,
-            threshold: co2Threshold,
-            unit: POLLUTANT_UNITS.CO2,
-            cfdValues: co2CFDValues
-        },
-        {
-            chart: chartTVOC,
-            name: 'TVOC',
-            values: tvocValues,
-            threshold: tvocThreshold,
-            unit: POLLUTANT_UNITS.TVOC,
-            cfdValues: null
-        },
-        {
-            chart: chartPM25,
-            name: 'PM2.5',
-            values: pm25Values,
-            threshold: pm25Threshold,
-            unit: POLLUTANT_UNITS.PM25,
-            cfdValues: pm25CFDValues
-        },
-        {
-            chart: chartTemp,
-            name: 'Temperature',
-            values: tempValues,
-            threshold: tempThreshold,
-            unit: POLLUTANT_UNITS.TEMP,
-            cfdValues: null
-        },
-        {
-            chart: chartRHum,
-            name: 'Relative Humidity',
-            values: rhumValues,
-            threshold: rhumThreshold,
-            unit: POLLUTANT_UNITS.RHUM,
-            cfdValues: null
-        }
-    ];
+function initializeCharts(configs, chartInstances, seriesState, timestamps, styles, cfdState = {}) {
+    configs.forEach(config => {
+        chartInstances[config.key] = initializeChart(
+            config,
+            seriesState[config.key] || [],
+            timestamps,
+            styles,
+            config.cfdKey ? (cfdState[config.cfdKey] || []) : []
+        );
+    });
+}
 
-    // Get chart styles
-    const chartStyles = {
-        toolbar: styleToolbar,
-        axis:    styleAxis,
-        ticks:   styleTicks,
-        stroke:  styleStroke,
-        marker:  styleMarker,
-    };
-
-    // Update each chart
-    chartData.forEach(data => {
+function updateCharts(configs, chartInstances, seriesState, timestamps, styles, cfdState = {}) {
+    configs.forEach(config => {
         updateChart(
-            data.chart,
-            data.name,
-            data.values,
-            timestamp,
-            data.threshold,
-            chartStyles,
-            data.unit,
-            data.cfdValues
+            chartInstances[config.key],
+            config,
+            seriesState[config.key] || [],
+            timestamps,
+            styles,
+            config.cfdKey ? (cfdState[config.cfdKey] || []) : []
         );
     });
 }
