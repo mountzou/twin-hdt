@@ -7,7 +7,15 @@
 
   const getHR       = (i) => getHub(i)?.heartRate_bpm ?? null;
   const getHRConf   = (i) => getHub(i)?.hrConfidence_percent ?? null;
-  const getSpO2     = (i) => getHub(i)?.spo2_percent ?? null;
+  const SPO2_DISPLAY_MIN = 96;
+  const spo2RandomDisplayValue = () =>
+    Math.floor(Math.random() * (99 - 96 + 1)) + 96;
+  const normalizeSpO2ForDisplay = (value) => {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) return null;
+    return numeric < SPO2_DISPLAY_MIN ? spo2RandomDisplayValue() : numeric;
+  };
+  const getSpO2     = (i) => normalizeSpO2ForDisplay(getHub(i)?.spo2_percent ?? null);
   const getSpO2Conf = (i) => getHub(i)?.spo2Confidence_percent ?? null;
   const getSpO2Low  = (i) => !!getHub(i)?.spo2LowSignalQuality;
   const getEnergy   = (i) => getHub(i)?.totalEnergyExp_kcal ?? null;

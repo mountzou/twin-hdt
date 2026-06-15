@@ -14,7 +14,17 @@
   <div class="row align-items-stretch">
 
     <div class="col">
-      <div id="{{ chart_id }}" style="min-height:280px;"></div>
+      <div class="dashboard-chart-shell is-loading" data-chart-shell="{{ chart_id }}">
+        <div class="dashboard-chart-skeleton" aria-hidden="true">
+          <div class="dashboard-chart-skeleton-line w-30"></div>
+          <div class="dashboard-chart-skeleton-line w-55"></div>
+          <div class="dashboard-chart-skeleton-line w-45"></div>
+          <div class="dashboard-chart-skeleton-line w-65"></div>
+          <div class="dashboard-chart-skeleton-line w-40"></div>
+        </div>
+        <div id="{{ chart_id }}" style="min-height:275px;"></div>
+      </div>
+      <div id="{{ chart_id }}-strip" class="hourly-strip is-empty" data-hourly-strip="{{ chart_id }}"></div>
     </div>
 
     {% if status_id %}
@@ -26,7 +36,7 @@
         <!-- 1h block -->
         <div class="iaq-block iaq-1h d-flex flex-column flex-shrink-0 flex-grow-0">
           <div class="text-secondary d-flex align-items-center gap-2">
-            <span class="status-dot"></span>
+            <span class="status-dot iaq-tier-dot iaq-tier-dot--grey"></span>
             <span class="iaq-display-name"></span>
             <span class="ms-auto text-muted iaq-period-label" style="font-size:0.75rem;">1h avg</span>
           </div>
@@ -37,7 +47,7 @@
         <!-- 8h block -->
         <div class="iaq-block iaq-8h d-flex flex-column flex-shrink-0 flex-grow-0">
           <div class="text-secondary d-flex align-items-center gap-2">
-            <span class="status-dot"></span>
+            <span class="status-dot iaq-tier-dot iaq-tier-dot--grey"></span>
             <span class="iaq-display-name"></span>
             <span class="ms-auto text-muted iaq-period-label" style="font-size:0.75rem;">8h avg</span>
           </div>

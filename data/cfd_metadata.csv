@@ -1,0 +1,23 @@
+File_name,Initial_pm2.5,Air_velocity,Activity_state,Gender,Healt state,dirstibution of PM2.5,Status
+50_part_in_2e-3T20.txt,50,2e-3 m/s,sitting (resting),male 35years old,normal,random,completed
+100_part_in_2e-3T20_v0.1,100,2e-3m/s,sitting (resting),male 35years old,normal,random,completed
+100_part_in_2e-3T20_v0.1_outlet0.06,100,2e-3m/s,sleeping,male 35years old,normal,random,completed
+95_part_in_2e-3T20_v0.1,95,2e-3m/s,sitting (resting),male 35years old,normal,random,completed
+102_part_in_2e-3T20_v0.1,102,2e-3m/s,sitting (resting),male 35years old,normal,random,completed
+25_part_in_2e-3T20_v0.1,25,2e-3m/s,sitting (resting),male 35years old,normal,random,completed
+35_part_in_2e-3T20_v0.1,35,2e-3m/s,sitting (resting),male 35years old,normal,random,completed
+30_part_in_2e-3T20_v0.1,30,2e-3m/s,sitting (resting),male 35years old,normal,random,completed
+42_part_in_2e-3T20_v0.1,42,2e-3m/s,sitting (resting),male 35years old,normal,random,completed
+42_part_in_2e-3T20_v0.1.txt,50,5e-3m/s,walking,male 35years old,normal,random,completed
+42_part_in_2e-3T20_v0.1,42,4e-3m/s,walking,male 35years old,normal,random,completed
+42_part_in_2e-3T20_v0.1,42,4e-3m/s,walking,male 35years old,normal,random,completed
+55_part_in_2e-3T20_v0.1,55,4e-3m/s,walking,male 35years old,normal,random,completed
+75_part_in_2e-3T20_v0.1,55,4e-3m/s,walking,male 35years old,normal,random,completed
+55_part_in_2e-3T20_v0.1,55,4e-3m/s,walking,male 35years old,normal,random,completed
+63_part_in_2e-3T20_v0.1,63,4e-3m/s,walking,male 35years old,normal,random,completed
+20_part_in_5e-3T20_v0.1_walking_ or_window_open_extreme_velosity_200_released,20,5e-3m/s,cooking (released 100),male 35years old,normal,random,completed
+10_part_in_2e-3T20_v0.1_low_velosity_300_released,10,2e-3m/s,cooking (released 100),male 35years old,normal,random,completed
+30_part_in_2e-3T20_v0.1_low_velosity_100_released,30,2e-3m/s,cooking (released 300),male 35years old,normal,random,completed
+20_part_in_2e-3T20_v0.1_low_velosity_300_released,20,2e-3m/s,cooking (released 300),male 35years old,normal,random,completed
+5_part_in_2e-3T20_v0.1_low_velosity_100_released,50,2e-3m/s,resting,female 35years old,normal,random,completed
+5_part_in_2e-3T20_v0.1_low_velosity_100_released,40,2e-3m/s,resting,female 35years old,normal,random,completed

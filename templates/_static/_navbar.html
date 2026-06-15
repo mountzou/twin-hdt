@@ -1,7 +1,13 @@
 <!-- _navbar.html -->
-{% macro nav_item(url, icon, title) %}
+{% macro nav_item(url, icon, title, active_paths=[], active_prefixes=[]) %}
+{% set active_state = namespace(is_active=request.path == url or request.path in active_paths) %}
+{% for active_prefix in active_prefixes %}
+    {% if request.path.startswith(active_prefix) %}
+        {% set active_state.is_active = true %}
+    {% endif %}
+{% endfor %}
 <li class="nav-item">
-    <a class="nav-link" href="{{ url }}">
+    <a class="nav-link{% if active_state.is_active %} active{% endif %}" href="{{ url }}"{% if active_state.is_active %} aria-current="page"{% endif %}>
         <span class="nav-link-icon d-md-none d-lg-inline-block">
             <i class="fas fa-{{ icon }}"></i>
         </span>
@@ -17,11 +23,10 @@
         <div class="navbar">
             <div class="container-xl">
                 <ul class="navbar-nav">
-                    {{ nav_item('/index/', 'home', 'Home') }}
-                    {{ nav_item('/air-pollutants/', 'wind', 'Indoor Air Pollutants') }}
-                    {{ nav_item('/index/', 'lungs', 'Health Recommendations') }}
-                    {{ nav_item('/activity-status/', 'person-running', 'Activity Analysis') }}
-                    {{ nav_item('/scenario-analysis/', 'chart-simple', 'Scenario Analysis') }}
+                    {{ nav_item('/index/', 'home', 'Dashboard', ['/', '/dashboard/']) }}
+                    {{ nav_item('/air-pollutants/', 'wind', 'Indoor Air Pollutants', ['/air_pollutants/'], ['/air-pollutant/', '/air_pollutant/']) }}
+                    {{ nav_item('/health-recommendations/', 'lungs', 'Health Recommendations', ['/health_recommendations/']) }}
+                    {{ nav_item('/activity-status/', 'person-running', 'Activity Analysis', ['/activity_status/']) }}
                 </ul>
             </div>
         </div>

@@ -5,7 +5,10 @@
             <h3 class="card-title">{{ pollutant_name }}</h3>
             <p class="text-secondary">{{ pollutant_desc }}</p>
             <div class="text-center">
-                <a href="{{ pollutant_href }}" class="btn btn-outline-primary">Explore</a>
+                <a href="{{ pollutant_href }}" class="btn btn-outline-primary d-inline-flex align-items-center gap-2">
+                    Explore
+                    <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                </a>
             </div>
         </div>
     </div>

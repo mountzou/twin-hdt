@@ -21,6 +21,8 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
 
+    {% block extra_styles %}{% endblock %}
+
 </head>
 <body>
 {% block body %}
@@ -41,34 +43,6 @@
     {% include '_static/_footer.html' %}
 	</div>
 
-    {% if session.get('authenticated') and session.get('wbsensors_ids') and not session.get('selected_wbsensor_id') %}
-    <div class="modal modal-blur fade" id="wearableSelectionModal" tabindex="-1" aria-labelledby="wearableSelectionModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="wearableSelectionModalLabel">Select wearable device</h5>
-                </div>
-                <div class="modal-body">
-                    <p class="text-muted mb-3">Choose the wearable device to use for this session.</p>
-                    <div class="mb-3">
-                        <label class="form-label" for="wearableSelectionInput">Available wearable devices</label>
-                        <select class="form-select" id="wearableSelectionInput">
-                            <option value="">Choose a wearable device</option>
-                            {% for sensor_id in session['wbsensors_ids'] %}
-                            <option value="{{ sensor_id }}">{{ sensor_id }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="alert alert-danger d-none mb-0" id="wearableSelectionError" role="alert"></div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary w-100" id="wearableSelectionSubmit">Continue</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-
 	<!-- Import HDT theming core libraries -->
 	<script src="{{ url_for('static', filename='js/demo-theme.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/demo.min.js') }}"></script>
@@ -82,7 +56,9 @@
     <!-- Import util functions -->
     <script src="{{ url_for('static', filename='js/util-date.js') }}"></script>
     <script src="{{ url_for('static', filename='js/util-statistics.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/util-iaq-theme.js') }}"></script>
     <script src="{{ url_for('static', filename='js/util-chart.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/util-hourly-strip.js') }}"></script>
     <script src="{{ url_for('static', filename='js/util-toast.js') }}"></script>
 
     <script src="{{ url_for('static', filename='js/index-pred-render-co2.js') }}"></script>
@@ -92,7 +68,8 @@
 
 	<script src="{{ url_for('static', filename='js/index-pb-data.js') }}"></script>
 	<script src="{{ url_for('static', filename='js/index-test.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/wearable-selection.js') }}"></script>
+
+    {% block page_scripts %}{% endblock %}
 
 <!--<script>-->
 <!--    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {-->
@@ -102,7 +79,7 @@
 
 	<script>
         window.hdtSession = {
-            requiresWearableSelection: {{ 'true' if session.get('authenticated') and session.get('wbsensors_ids') and not session.get('selected_wbsensor_id') else 'false' }}
+            requiresWearableSelection: false
         };
 
 	    document.addEventListener('DOMContentLoaded', function() {
@@ -110,7 +87,10 @@
 	        const options = { month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' };
 	        const updateTime = document.getElementById('updateTime');
             if (updateTime) {
-	            updateTime.textContent = now.toLocaleString('en-US', options);
+                // Fallback for pages that don't override this with data-driven timestamps.
+                if (!updateTime.textContent || !updateTime.textContent.trim()) {
+	                updateTime.textContent = now.toLocaleString('en-US', options);
+                }
             }
 	    });
 	</script>

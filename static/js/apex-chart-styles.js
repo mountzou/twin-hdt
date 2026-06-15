@@ -4,8 +4,8 @@ const styleMarker = {
 };
 
 const styleStroke = {
-    curve: 'monotoneCubic',
-    width: 2.5,
+    curve: 'smooth',
+    width: 2,
     dashArray: 0,
     lineCap: 'square'
 }

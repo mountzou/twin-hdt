@@ -5,10 +5,62 @@
     --tblr-font-weight-regular: 500;
     --tblr-font-weight-medium: 600;
     --tblr-font-weight-bold: 700;
+    --tblr-footer-font-size: 0.775rem;
 
     --color-black: rgba(0,0,0, 100);
     --color-white: rgba(255,255,255, 100);
+
+    /* Canonical IAQ tier colors — keep in sync with iaq_theme.py IAQ_SEVERITY_HEX */
+    --iaq-severity-good: #24c19a;
+    --iaq-severity-moderate: #fbbf23;
+    --iaq-severity-poor: #f5785c;
+    --iaq-severity-muted: #929dab;
+    --iaq-no-data: #dadfe5;
+    --iaq-strip-no-policy: #cbd5e1;
+
+    --iaq-good: color-mix(in srgb, var(--iaq-severity-good) 16%, white);
+    --iaq-moderate: color-mix(in srgb, var(--iaq-severity-moderate) 16%, white);
+    --iaq-poor: color-mix(in srgb, var(--iaq-severity-poor) 16%, white);
+    --iaq-good-border: var(--iaq-severity-good);
+    --iaq-moderate-border: var(--iaq-severity-moderate);
+    --iaq-poor-border: var(--iaq-severity-poor);
+    --iaq-good-text: #064e3b;
+    --iaq-moderate-text: #713f12;
+    --iaq-poor-text: #881337;
 }
+
+/* IAQ tier utilities (avoid Tabler semantic greens/oranges diverging from theme) */
+.iaq-tier-text--good { color: var(--iaq-severity-good); }
+.iaq-tier-text--moderate { color: var(--iaq-severity-moderate); }
+.iaq-tier-text--poor { color: var(--iaq-severity-poor); }
+.iaq-tier-text--grey { color: var(--iaq-severity-muted); }
+
+.iaq-tier-bg--good { background-color: var(--iaq-severity-good) !important; }
+.iaq-tier-bg--moderate { background-color: var(--iaq-severity-moderate) !important; }
+.iaq-tier-bg--poor { background-color: var(--iaq-severity-poor) !important; }
+.iaq-tier-bg--grey { background-color: var(--iaq-severity-muted) !important; }
+
+.iaq-tier-badge-lt--good {
+    background-color: color-mix(in srgb, var(--iaq-severity-good) 14%, white) !important;
+    color: color-mix(in srgb, var(--iaq-severity-good) 72%, #0f172a) !important;
+}
+.iaq-tier-badge-lt--moderate {
+    background-color: color-mix(in srgb, var(--iaq-severity-moderate) 18%, white) !important;
+    color: color-mix(in srgb, var(--iaq-severity-moderate) 55%, #0f172a) !important;
+}
+.iaq-tier-badge-lt--poor {
+    background-color: color-mix(in srgb, var(--iaq-severity-poor) 14%, white) !important;
+    color: color-mix(in srgb, var(--iaq-severity-poor) 55%, #0f172a) !important;
+}
+.iaq-tier-badge-lt--grey {
+    background-color: color-mix(in srgb, var(--iaq-severity-muted) 12%, white) !important;
+    color: #3a4859 !important;
+}
+
+.status-dot.iaq-tier-dot--good { background-color: var(--iaq-severity-good); }
+.status-dot.iaq-tier-dot--moderate { background-color: var(--iaq-severity-moderate); }
+.status-dot.iaq-tier-dot--poor { background-color: var(--iaq-severity-poor); }
+.status-dot.iaq-tier-dot--grey { background-color: var(--iaq-severity-muted); }
 
 body {
     font-family: "Nunito Sans", sans-serif;
@@ -46,6 +98,44 @@ h1 {
     --tblr-navbar-border-color: #f6f8fb;
 }
 
+/* Match navbar: solid white bar with the same light top border as nav separation */
+.footer {
+    background-color: var(--color-white);
+    border-top: 2px solid #f6f8fb;
+    font-size: var(--tblr-footer-font-size);
+}
+
+.footer .footer-link {
+    text-decoration: none;
+}
+
+.footer .footer-link:hover,
+.footer .footer-link:focus-visible {
+    color: var(--color-black);
+    text-decoration: none;
+}
+
+.footer .footer-link__icon {
+    margin-right: 0.35rem;
+}
+
+.footer-eu-logo {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    height: 2.75rem;
+    width: auto;
+    max-width: min(100%, 14rem);
+    object-fit: contain;
+}
+
+@media (min-width: 992px) {
+    .footer-eu-logo {
+        margin-left: 0;
+        margin-right: 0;
+    }
+}
+
 .navbar-header {
     min-height: 4.5rem;
 }
@@ -54,8 +144,30 @@ h1 {
     font-weight: var(--tblr-font-weight-medium);
 }
 
+.navbar-nav .nav-link.active,
+.navbar-nav .nav-link.active .nav-link-icon,
+.navbar-nav .nav-link.active .nav-link-title {
+    color: var(--tblr-primary);
+}
+
 .page-update-time {
     font-weight: 600;
+}
+
+.breadcrumb-title {
+    display: inline-flex;
+    align-items: center;
+}
+
+.breadcrumb-title-icon {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 1rem;
+    margin-right: 0.5rem;
+    color: currentColor;
+    font-size: 0.6em;
+    line-height: 1;
 }
 
 .article-card {
@@ -88,15 +200,119 @@ h1 {
 }
 
 .apexcharts-tooltip {
-    background: rgba(0, 0, 0, 0.12) !important;
+    background: #ffffff !important;
     color: #2F3645 !important;
+    border: 1px solid rgba(15, 23, 42, 0.12) !important;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.12) !important;
+}
+
+.apexcharts-tooltip:has(.hdt-chart-tooltip) {
+    padding: 0;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    overflow: visible;
+}
+
+.hdt-chart-tooltip {
+    display: flex;
+    flex-direction: column;
+    width: max-content;
+    max-width: min(320px, 90vw);
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid #e3e3e3;
+    border-radius: 5px;
+    box-shadow: 2px 2px 6px -4px rgba(0, 0, 0, 0.4);
+    font-family: 'Nunito Sans', sans-serif;
+    color: #1f2937;
+    pointer-events: none;
+}
+
+.hdt-chart-tooltip-title {
+    padding: 4px 10px;
+    background: #eceff1;
+    border-bottom: 1px solid #ddd;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.3;
+    white-space: nowrap;
+}
+
+.hdt-chart-tooltip-body {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 10px 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.3;
+    white-space: nowrap;
+}
+
+.hdt-chart-tooltip-marker {
+    flex-shrink: 0;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.hdt-chart-tooltip-text {
+    font-weight: 500;
+}
+
+.apexcharts-legend-marker {
+    width: 12px !important;
+    height: 9px !important;
+    border-radius: 2px !important;
+    margin-right: 2px !important;
     border: none !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+}
+
+/* Sensor swatch: blue-100 fill with blue-300 border */
+.apexcharts-legend-series:nth-child(1) .apexcharts-legend-marker {
+    background: rgba(147, 197, 253, 0.06) !important; /* very faint fill */
+    box-shadow: inset 0 0 0 2px #93c5fd !important; /* strong blue-300 border */
+}
+
+/* CFD swatch: slate-100 fill with slate-300 border */
+.apexcharts-legend-series:nth-child(2) .apexcharts-legend-marker {
+    background: rgba(203, 213, 225, 0.06) !important; /* very faint fill */
+    box-shadow: inset 0 0 0 2px #cbd5e1 !important; /* strong slate-300 border */
+}
+
+.apexcharts-legend-text {
+    padding-left: 5px;
 }
 
 .dropdown-item {
+    display: flex;
+    align-items: center;
     font-size: 14px;
     font-weight: 550;
     min-width: 8rem;
+}
+
+.dropdown-item-icon {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    flex: 0 0 1rem;
+    width: 1rem;
+    margin-right: 0.75rem;
+    color: var(--tblr-muted);
+    line-height: 1;
+}
+
+.dropdown-item-icon i {
+    display: block;
+    line-height: 1;
+}
+
+.dropdown-menu .dropdown-divider {
+    margin: 0.125rem 0;
 }
 
 .chart-status-overlay {
@@ -194,20 +410,64 @@ h1 {
     transition: color 200ms ease, opacity 200ms ease;
 }
 
-.iaq-side-panel {
-    min-width: 160px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+.forecast-value-medium {
+    font-weight: var(--tblr-font-weight-medium) !important;
 }
 
-.status-dot {
-    width: 10px;
-    height: 10px;
-    display: inline-block;
-    border-radius: 50%;
-    margin-right: 0.5rem;
-}.iaq-side-panel {
+.dashboard-chart-shell {
+    position: relative;
+    min-height: 275px;
+    overflow: hidden;
+}
+
+.dashboard-chart-shell.is-loading > [id^="index-chart-"] {
+    visibility: hidden;
+}
+
+.dashboard-chart-skeleton {
+    position: absolute;
+    inset: 64px 18px 36px 18px;
+    display: none;
+    pointer-events: none;
+    z-index: 2;
+    border-radius: 8px;
+    padding: 0;
+    justify-content: space-between;
+    flex-direction: column;
+    align-items: center;
+}
+
+.dashboard-chart-shell.is-loading .dashboard-chart-skeleton {
+    display: flex;
+}
+
+.dashboard-chart-skeleton-line {
+    height: 2px;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 999px;
+    background: linear-gradient(
+        90deg,
+        rgba(58, 74, 89, 0.08) 0%,
+        rgba(58, 74, 89, 0.16) 50%,
+        rgba(58, 74, 89, 0.08) 100%
+    );
+    background-size: 240% 100%;
+    animation: dashboard-chart-skeleton-shimmer 1.3s ease-in-out infinite;
+}
+
+.dashboard-chart-skeleton-line.w-30 { width: 30%; }
+.dashboard-chart-skeleton-line.w-40 { width: 38%; }
+.dashboard-chart-skeleton-line.w-45 { width: 46%; }
+.dashboard-chart-skeleton-line.w-55 { width: 58%; }
+.dashboard-chart-skeleton-line.w-65 { width: 70%; }
+
+@keyframes dashboard-chart-skeleton-shimmer {
+    0% { background-position: 100% 0; }
+    100% { background-position: -100% 0; }
+}
+
+.iaq-side-panel {
     min-width: 160px;
     display: flex;
     flex-direction: column;
@@ -224,4 +484,302 @@ h1 {
 
 .card-body {
     line-height: 1.7rem;
+}
+
+/* Profile (form-floating): filled disabled controls keep a white label notch in Tabler because
+   .form-control:not(:placeholder-shown)~label::after overrides :disabled~label::after. */
+.form-floating > .form-control:disabled ~ label::after {
+    background-color: var(--tblr-bg-surface-secondary);
+}
+
+.form-floating > label {
+    font-weight: var(--tblr-font-weight-bold);
+}
+
+/* Hourly status strip: thin coloured bars (one per hour) beneath each
+   dashboard chart, inspired by the OpenAI status page uptime row. */
+.hourly-strip {
+    margin-top: 1.5rem;
+    margin-bottom: 2rem;
+    padding: 1rem 1rem 0.65rem;
+    background: rgba(58, 74, 89, 0.03);
+    border: 1px solid rgba(58, 74, 89, 0.08);
+    border-radius: 10px;
+}
+
+.hourly-strip.is-empty {
+    display: none;
+}
+
+.hourly-strip-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    font-family: 'Nunito Sans', sans-serif;
+    font-size: 0.78rem;
+    color: #3a4a59;
+}
+
+.hourly-strip-title {
+    font-weight: 600;
+}
+
+.hourly-strip-summary {
+    font-weight: 500;
+    color: #5b6b7a;
+    text-align: right;
+}
+
+.hourly-strip-bars {
+    display: flex;
+    gap: 2px;
+    align-items: stretch;
+    position: relative;
+    width: 100%;
+}
+
+.hourly-strip-bar {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 22px;
+    border-radius: 2px;
+    position: relative;
+    transition: transform 120ms ease, filter 120ms ease;
+    cursor: default;
+}
+
+.hourly-strip-bar:hover {
+    filter: brightness(1.05);
+}
+
+/* Tooltip styled to mirror ApexCharts' light-theme tooltip
+   (white card, grey title strip, coloured marker dot in the body row). */
+.hourly-strip-tooltip {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 8px);
+    transform: translateX(-50%);
+    display: none;
+    flex-direction: column;
+    width: max-content;
+    max-width: min(320px, 90vw);
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid #e3e3e3;
+    border-radius: 5px;
+    box-shadow: 2px 2px 6px -4px rgba(0, 0, 0, 0.4);
+    font-family: 'Nunito Sans', sans-serif;
+    color: #1f2937;
+    pointer-events: none;
+    z-index: 20;
+}
+
+.hourly-strip-bar:hover .hourly-strip-tooltip {
+    display: flex;
+}
+
+.hourly-strip-tooltip-title {
+    padding: 4px 10px;
+    background: #eceff1;
+    border-bottom: 1px solid #ddd;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.3;
+    white-space: nowrap;
+}
+
+.hourly-strip-tooltip-body {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 10px 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.3;
+    white-space: nowrap;
+}
+
+.hourly-strip-tooltip-marker {
+    flex-shrink: 0;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.hourly-strip-axis {
+    position: relative;
+    height: 0.95rem;
+    margin-top: 0.35rem;
+    font-family: 'Nunito Sans', sans-serif;
+    font-size: 0.7rem;
+    color: #8896a3;
+}
+
+.hourly-strip-axis span {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    line-height: 0.95rem;
+}
+
+/* .btn sets Nunito; Font Awesome icons need the icon font or PUA glyphs render wrong */
+.btn .fa-solid,
+.btn .fas {
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+    font-style: normal;
+}
+
+/* Device ID rows (index page pattern) */
+.wearable-device-subtitle {
+    margin: 0;
+    color: var(--tblr-muted, #667382);
+    font-size: 0.82rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    line-height: 1.35;
+    max-width: 100%;
+}
+
+.wearable-device-subtitle i {
+    color: var(--tblr-muted, #667382);
+    font-size: 0.8rem;
+    flex: 0 0 auto;
+}
+
+.wearable-device-subtitle .device-id-text {
+    font-family: var(--tblr-font-monospace, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);
+    word-break: break-all;
+}
+
+.chart-card-device-id {
+    flex: 1 1 auto;
+    min-width: 0;
+    justify-content: flex-end;
+    text-align: right;
+}
+
+.chart-card-device-id .device-id-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    word-break: normal;
+}
+
+.activity-status-chart-head {
+    display: block;
+}
+
+.activity-status-chart-head-top {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, max-content);
+    column-gap: 1.25rem;
+    align-items: baseline;
+    width: 100%;
+}
+
+.activity-status-chart-head-top .activity-status-device-row {
+    justify-self: end;
+    align-items: baseline;
+    max-width: min(52vw, 28rem);
+}
+
+.activity-status-chart-head-top .activity-status-chart-subtitle,
+.activity-status-chart-head-top .activity-status-device-row {
+    line-height: 1.35;
+}
+
+.card.activity-status-state-card {
+    border: none;
+    background-color: color-mix(in srgb, var(--activity-card-bg) 20%, transparent) !important;
+    color: var(--tblr-body-color, #182433);
+}
+
+.card.activity-status-state-card > .card-body {
+    background-color: transparent !important;
+}
+
+.activity-status-state-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    min-width: 0;
+}
+
+.activity-status-state-label {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-width: 0;
+}
+
+.activity-status-state-icon {
+    flex: 0 0 auto;
+    width: 1rem;
+    color: var(--activity-color);
+    font-size: 0.95rem;
+    text-align: center;
+}
+
+.activity-status-state-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--activity-color);
+}
+
+.activity-status-state-share.badge {
+    flex-shrink: 0;
+    margin: 0;
+    padding: 0.3em 0.55em;
+    border: none;
+    border-radius: 0.375rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--activity-color);
+    background-color: color-mix(in srgb, var(--activity-color) 18%, transparent);
+}
+
+.activity-status-state-metrics {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.activity-status-pollutant-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 0.35rem;
+    color: var(--activity-color);
+}
+
+.activity-status-pollutant-name .text-muted {
+    color: var(--activity-color) !important;
+}
+
+.activity-status-stat-grid {
+    display: grid;
+    grid-template-columns: auto 1fr auto 1fr auto 1fr;
+    gap: 0.2rem 0.65rem;
+    font-size: 0.78rem;
+    line-height: 1.35;
+}
+
+.activity-status-stat-grid dt {
+    margin: 0;
+    font-weight: 600;
+    color: var(--tblr-muted, #667382);
+}
+
+.activity-status-stat-grid dd {
+    margin: 0;
+    font-family: var(--tblr-font-monospace, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);
+    font-weight: 600;
+    text-align: right;
 }

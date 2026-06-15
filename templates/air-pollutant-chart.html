@@ -52,16 +52,20 @@
     </div>
 </form>
 
-<div class="row mt-4">
-    <div id="chart-container">
-        <div class="jumbotron jumbotron-fluid" id="waiting-message">
-            <div class="container text-center pt-6">
-                <h1 class="text-center">Enter your desired parameters of querying data.</h1>
-                <p class="lead pt-4"><code>aggregation method</code> is a modified jumbotron that occupies the entire horizontal space of its parent.</p>
-                <p class="lead"><code>aggregation period</code> specifies the .</p>
-                <p class="lead"><code>limit</code> is a modified jumbotron that occupies the entire horizontal space of its parent.</p>
+<div class="row row-cards mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body" id="chart-container">
+                <div class="jumbotron jumbotron-fluid" id="waiting-message">
+                    <div class="container text-center pt-6">
+                        <h1 class="text-center">Enter your desired parameters of querying data.</h1>
+                        <p class="lead pt-4"><code>aggregation method</code> is a modified jumbotron that occupies the entire horizontal space of its parent.</p>
+                        <p class="lead"><code>aggregation period</code> specifies the .</p>
+                        <p class="lead"><code>limit</code> is a modified jumbotron that occupies the entire horizontal space of its parent.</p>
+                    </div>
+                </div>
+                <div id="air-pollutants-chart" data-pollutant="{{ pollutant }}" data-unit="{{ pollutants_info[pollutant]['unit'] }}" style="display: none;"></div>
             </div>
         </div>
-        <div id="air-pollutants-chart" data-pollutant="{{ pollutant }}" data-unit="{{ pollutants_info[pollutant]['unit'] }}" style="display: none;"></div>
     </div>
 </div>

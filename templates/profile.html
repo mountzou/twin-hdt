@@ -9,21 +9,8 @@
 <div class="page">
 
     <!-- Page header -->
-    <div class="page-header d-print-none">
-        <div class="container-xl">
-            <div class="row g-2 align-items-center">
-                <div class="col d-flex d-md-block flex-column align-items-center text-md-start">
-                    <!-- Page pre-title -->
-                    <div class="page-pretitle">
-                        Human Digital Twin
-                    </div>
-                    <h2 class="page-title">
-                        Profile
-                    </h2>
-                </div>
-            </div>
-        </div>
-    </div>
+    {% from '_static/_breadcrumb.html' import render_breadcrumb %}
+    {{ render_breadcrumb('Human Digital Twin', 'Profile', 'user') }}
     
     <!-- Page body -->
     <div class="page-body">
@@ -34,8 +21,7 @@
                     <div class="card">
                         <div class="card-body">
                             <h3 class="card-title">User Information</h3>
-                            <p class="card-subtitle text-muted">Your personal account information in the TwinAIR digital
-                                ecosystem.</p>
+                            <p class="card-subtitle text-muted">Your personal account information in the TwinAIR authentication platform.</p>
 
                             <!-- First Row: Username & Email -->
                             <div class="row g-3">
@@ -56,15 +42,6 @@
                             </div>
 
                         </div>
-                        <div class="card-footer">
-                            <div class="row align-items-center">
-                                <div class="col">
-                                    <i class="fas fa-exclamation-triangle text-info me-3"></i>
-                                    Personal account details cannot be edited directly in HumanDT. For any updates,
-                                    please contact <a href="#">ETRA</a>.
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -75,14 +52,13 @@
                     <div class="card">
                         <div class="card-body">
                             <h3 class="card-title">Sensors Information</h3>
-                            <p class="card-subtitle text-muted">Overview of the hardware, wearable, and virtual sensors
-                                connected to your organization
-                                and/or tenant.</p>
+                            <p class="card-subtitle text-muted">Portable and wearable devices assigned to your account
+                                ({{ session['username'] }}).</p>
 
                             <div class="row">
-                                <!-- Hardware Sensors (Left Column) -->
+                                <!-- Portable Sensors (Left Column) -->
                                 <div class="col-md-6">
-                                    <h5 class="mt-3">Hardware Sensors</h5>
+                                    <h5 class="mt-3"><i class="fas fa-microchip me-2" aria-hidden="true"></i>Portable Sensors</h5>
                                     <div class="table-responsive">
                                         <table class="table table-striped">
                                             <thead>
@@ -91,15 +67,15 @@
                                             </tr>
                                             </thead>
                                             <tbody>
-                                            {% if session['hwsensors_ids'] %}
-                                            {% for sensor_id in session['hwsensors_ids'] %}
+                                            {% if session.get('portable_ids') %}
+                                            {% for sensor_id in session['portable_ids'] %}
                                             <tr>
                                                 <td>{{ sensor_id }}</td>
                                             </tr>
                                             {% endfor %}
                                             {% else %}
                                             <tr>
-                                                <td class="text-muted">No hardware sensors available.</td>
+                                                <td class="text-muted">No portable sensors assigned.</td>
                                             </tr>
                                             {% endif %}
                                             </tbody>
@@ -109,7 +85,7 @@
 
                                 <!-- Wearable Sensors (Right Column) -->
                                 <div class="col-md-6">
-                                    <h5 class="mt-3">Wearable Sensors</h5>
+                                    <h5 class="mt-3"><i class="fas fa-heart-pulse me-2" aria-hidden="true"></i>Wearable Sensors</h5>
                                     <div class="table-responsive">
                                         <table class="table table-striped">
                                             <thead>
@@ -118,7 +94,7 @@
                                             </tr>
                                             </thead>
                                             <tbody>
-                                            {% if session['wbsensors_ids'] %}
+                                            {% if session.get('wbsensors_ids') %}
                                             {% for sensor_id in session['wbsensors_ids'] %}
                                             <tr>
                                                 <td>{{ sensor_id }}</td>
@@ -126,7 +102,7 @@
                                             {% endfor %}
                                             {% else %}
                                             <tr>
-                                                <td class="text-muted">No wearable sensors available.</td>
+                                                <td class="text-muted">No wearable sensors assigned.</td>
                                             </tr>
                                             {% endif %}
                                             </tbody>

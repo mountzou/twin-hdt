@@ -1,0 +1,641 @@
+{% extends 'base.html' %}
+
+{% block title %}CFD{% endblock %}
+
+{% block extra_styles %}
+<link href="{{ url_for('static', filename='css/ion.rangeSlider.min.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='css/custom-slider.css') }}" rel="stylesheet">
+<style>
+    .cfd-visualization-stage {
+        position: relative;
+        min-height: 460px;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #101827;
+    }
+
+    #cfdVisualizationCanvas {
+        width: 100%;
+        height: 460px;
+        display: block;
+    }
+
+    .cfd-visualization-overlay {
+        position: absolute;
+        inset: 1rem auto auto 1rem;
+        min-width: 220px;
+        padding: .75rem 1rem;
+        border: 1px solid rgba(255, 255, 255, .14);
+        border-radius: 8px;
+        color: #f8fafc;
+        background: rgba(15, 23, 42, .78);
+        backdrop-filter: blur(8px);
+    }
+
+    .cfd-visualization-overlay .text-muted {
+        color: rgba(248, 250, 252, .68) !important;
+    }
+
+    .cfd-legend-dot {
+        width: .65rem;
+        height: .65rem;
+        display: inline-block;
+        border-radius: 999px;
+        background: #38bdf8;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page">
+    {% from '_static/_breadcrumb.html' import render_breadcrumb %}
+    {{ render_breadcrumb('Human Digital Twin', 'CFD', 'atom') }}
+
+    <div class="page-body">
+        <div class="container-xl pt-2">
+            <div class="row row-cards">
+                <div class="col-12 col-lg-7">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">CFD simulation parameters</h3>
+                        </div>
+                        <form id="cfdSimulationForm" class="card-body">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label" for="cfdPm25">Initial PM2.5</label>
+                                    <input type="text" id="cfdPm25" name="pm25" value="{{ cfd_parameter_options.pm25[0] }}">
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label" for="cfdAirVelocity">Air velocity</label>
+                                    <input type="text" id="cfdAirVelocity" name="air_velocity" value="{{ cfd_parameter_options.air_velocity[0] }}">
+                                </div>
+
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label" for="cfdActivityState">Activity state</label>
+                                    <select class="form-select" id="cfdActivityState" name="activity_state" required>
+                                        {% for value in cfd_parameter_options.activity_state %}
+                                            <option value="{{ value }}">{{ value }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label" for="cfdPm25Distribution">PM2.5 distribution</label>
+                                    {% set pm25_distribution = cfd_parameter_options.pm25_distribution[0] %}
+                                    <select class="form-select" id="cfdPm25Distribution" disabled>
+                                        <option selected>{{ pm25_distribution | capitalize }}</option>
+                                    </select>
+                                    <input type="hidden" name="pm25_distribution" value="{{ pm25_distribution }}">
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="hr-text">Fixed subject assumptions</div>
+                                    <div class="row g-3">
+                                        <div class="col-12 col-md-4">
+                                            {% set gender = cfd_parameter_options.gender[0] %}
+                                            <label class="form-label" for="cfdGender">Gender</label>
+                                            <label class="form-check form-switch mb-0">
+                                                <input class="form-check-input" id="cfdGender" type="checkbox" checked disabled>
+                                                <span class="form-check-label">{{ gender | capitalize }}</span>
+                                            </label>
+                                            <input type="hidden" name="gender" value="{{ gender }}">
+                                        </div>
+
+                                        <div class="col-12 col-md-4">
+                                            {% set age_years = cfd_parameter_options.age_years[0] %}
+                                            <label class="form-label" for="cfdAgeYears">Age</label>
+                                            <label class="form-check form-switch mb-0">
+                                                <input class="form-check-input" id="cfdAgeYears" type="checkbox" checked disabled>
+                                                <span class="form-check-label">{{ age_years }} years old</span>
+                                            </label>
+                                            <input type="hidden" name="age_years" value="{{ age_years }}">
+                                        </div>
+
+                                        <div class="col-12 col-md-4">
+                                            {% set health_state = cfd_parameter_options.health_state[0] %}
+                                            <label class="form-label" for="cfdHealthState">Health state</label>
+                                            <label class="form-check form-switch mb-0">
+                                                <input class="form-check-input" id="cfdHealthState" type="checkbox" checked disabled>
+                                                <span class="form-check-label">{{ health_state | capitalize }}</span>
+                                            </label>
+                                            <input type="hidden" name="health_state" value="{{ health_state }}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card-footer px-0 pb-0 mt-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-play me-2"></i>
+                                    Submit parameters
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-5">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Submitted payload</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info mb-3" id="cfdSubmissionStatus">
+                                Submit parameters to validate the CFD case selection.
+                            </div>
+                            <pre class="bg-light border rounded p-3 mb-0" id="cfdSubmittedPayload">{}</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row row-cards mt-3">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h3 class="card-title">3D inhalation visualization</h3>
+                                <p class="card-subtitle">
+                                    Conceptual room view driven by the CFD cumulative inhalation result.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="cfd-visualization-stage">
+                                <canvas id="cfdVisualizationCanvas"></canvas>
+                                <div class="cfd-visualization-overlay">
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <span class="cfd-legend-dot"></span>
+                                        <strong id="cfdVisualState">Awaiting parameters</strong>
+                                    </div>
+                                    <div class="small text-muted">Time</div>
+                                    <div class="h3 mb-2" id="cfdVisualTime">-</div>
+                                    <div class="small text-muted">Cumulative inhaled PM2.5 particles</div>
+                                    <div class="h2 mb-0" id="cfdVisualHeight">-</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="{{ url_for('static', filename='js/ion.rangeSlider.min.js') }}"></script>
+<script>
+    window.cfdSimulations = {{ cfd_simulations | tojson }};
+    window.cfdParameterOptions = {{ cfd_parameter_options | tojson }};
+    window.cfdResults = {{ cfd_results | tojson }};
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('cfdSimulationForm');
+        const status = document.getElementById('cfdSubmissionStatus');
+        const payloadPreview = document.getElementById('cfdSubmittedPayload');
+        const visualState = document.getElementById('cfdVisualState');
+        const visualTime = document.getElementById('cfdVisualTime');
+        const visualHeight = document.getElementById('cfdVisualHeight');
+        const airVelocityUnit = "{{ cfd_defaults.air_velocity_unit | default('m/s') }}";
+        const cfdResultsByFileName = Object.fromEntries(
+            window.cfdResults.map(function(result) {
+                return [result.file_name, result];
+            })
+        );
+        let visualizer = null;
+
+        $('#cfdPm25').ionRangeSlider({
+            type: 'single',
+            grid: true,
+            values: window.cfdParameterOptions.pm25,
+            postfix: ' μg/m³'
+        });
+
+        $('#cfdAirVelocity').ionRangeSlider({
+            type: 'single',
+            grid: true,
+            values: window.cfdParameterOptions.air_velocity,
+            postfix: ' ' + airVelocityUnit
+        });
+
+        function selectedPayload() {
+            const formData = new FormData(form);
+            return {
+                pm25: Number(formData.get('pm25')),
+                air_velocity: Number(formData.get('air_velocity')),
+                activity_state: formData.get('activity_state'),
+                pm25_distribution: formData.get('pm25_distribution'),
+                subject: {
+                    gender: formData.get('gender'),
+                    age_years: Number(formData.get('age_years')),
+                    health_state: formData.get('health_state')
+                }
+            };
+        }
+
+        function matchesSimulation(simulation, payload) {
+            return simulation.initial_conditions.pm25 === payload.pm25
+                && simulation.initial_conditions.air_velocity === payload.air_velocity
+                && simulation.initial_conditions.pm25_distribution === payload.pm25_distribution
+                && simulation.activity_state === payload.activity_state
+                && simulation.subject.gender === payload.subject.gender
+                && simulation.subject.age_years === payload.subject.age_years
+                && simulation.subject.health_state === payload.subject.health_state;
+        }
+
+        function createCfdVisualizer() {
+            const canvas = document.getElementById('cfdVisualizationCanvas');
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x101827);
+
+            const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+            renderer.shadowMap.enabled = true;
+
+            const camera = new THREE.PerspectiveCamera(46, 1, 0.1, 100);
+            camera.position.set(4.8, 3.2, 6.2);
+            camera.lookAt(0, 1.1, 0);
+
+            const room = new THREE.Group();
+            scene.add(room);
+
+            const ambient = new THREE.HemisphereLight(0xdbeafe, 0x1f2937, 1.2);
+            scene.add(ambient);
+
+            const keyLight = new THREE.DirectionalLight(0xffffff, 1.4);
+            keyLight.position.set(2, 5, 4);
+            keyLight.castShadow = true;
+            scene.add(keyLight);
+
+            const floor = new THREE.Mesh(
+                new THREE.PlaneGeometry(7, 5),
+                new THREE.MeshStandardMaterial({ color: 0x263244, roughness: 0.88, metalness: 0.02 })
+            );
+            floor.rotation.x = -Math.PI / 2;
+            floor.receiveShadow = true;
+            room.add(floor);
+
+            const backWall = new THREE.Mesh(
+                new THREE.PlaneGeometry(7, 3.2),
+                new THREE.MeshStandardMaterial({ color: 0x1d2738, roughness: 0.9 })
+            );
+            backWall.position.set(0, 1.6, -2.5);
+            room.add(backWall);
+
+            const sideWall = new THREE.Mesh(
+                new THREE.PlaneGeometry(5, 3.2),
+                new THREE.MeshStandardMaterial({ color: 0x202b3b, roughness: 0.9 })
+            );
+            sideWall.position.set(-3.5, 1.6, 0);
+            sideWall.rotation.y = Math.PI / 2;
+            room.add(sideWall);
+
+            const windowFrame = new THREE.Mesh(
+                new THREE.BoxGeometry(1.5, 1.1, 0.05),
+                new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.75 })
+            );
+            windowFrame.position.set(-2.55, 1.9, -2.46);
+            room.add(windowFrame);
+
+            const person = new THREE.Group();
+            const skin = new THREE.MeshStandardMaterial({ color: 0xf0c7a7, roughness: 0.55 });
+            const clothing = new THREE.MeshStandardMaterial({ color: 0x2563eb, roughness: 0.7 });
+            const dark = new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.75 });
+            const furniture = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.82 });
+            const bedding = new THREE.MeshStandardMaterial({ color: 0x93c5fd, roughness: 0.76 });
+
+            const body = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.36, 0.95, 24), clothing);
+            body.position.set(1.7, 0.95, 0);
+            body.castShadow = true;
+            person.add(body);
+
+            const head = new THREE.Mesh(new THREE.SphereGeometry(0.28, 24, 16), skin);
+            head.position.set(1.7, 1.65, 0);
+            head.castShadow = true;
+            person.add(head);
+
+            const nose = new THREE.Mesh(new THREE.ConeGeometry(0.055, 0.18, 16), skin);
+            nose.rotation.z = -Math.PI / 2;
+            nose.position.set(1.43, 1.66, 0);
+            person.add(nose);
+
+            const legs = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.5, 0.28), dark);
+            legs.position.set(1.7, 0.35, 0);
+            legs.castShadow = true;
+            person.add(legs);
+
+            const leftFoot = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.16, 0.22), dark);
+            leftFoot.position.set(1.48, 0.12, 0.22);
+            leftFoot.castShadow = true;
+            leftFoot.visible = false;
+            person.add(leftFoot);
+
+            const rightFoot = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.16, 0.22), dark);
+            rightFoot.position.set(1.92, 0.12, -0.22);
+            rightFoot.castShadow = true;
+            rightFoot.visible = false;
+            person.add(rightFoot);
+            room.add(person);
+
+            const chair = new THREE.Group();
+            const chairSeat = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.12, 0.75), furniture);
+            chairSeat.position.set(1.72, 0.45, 0);
+            chairSeat.castShadow = true;
+            chair.add(chairSeat);
+            const chairBack = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.85, 0.75), furniture);
+            chairBack.position.set(2.12, 0.9, 0);
+            chairBack.castShadow = true;
+            chair.add(chairBack);
+            chair.visible = false;
+            room.add(chair);
+
+            const bed = new THREE.Group();
+            const bedBase = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.22, 1.05), furniture);
+            bedBase.position.set(1.35, 0.33, 0);
+            bedBase.castShadow = true;
+            bed.add(bedBase);
+            const mattress = new THREE.Mesh(new THREE.BoxGeometry(2.25, 0.16, 0.95), bedding);
+            mattress.position.set(1.35, 0.53, 0);
+            bed.add(mattress);
+            const pillow = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.12, 0.6), new THREE.MeshStandardMaterial({ color: 0xe0f2fe, roughness: 0.7 }));
+            pillow.position.set(0.3, 0.68, 0);
+            bed.add(pillow);
+            bed.visible = false;
+            room.add(bed);
+
+            let noseTarget = new THREE.Vector3(1.34, 1.66, 0);
+            const source = new THREE.Vector3(-2.65, 1.55, -1.25);
+
+            const particleCount = 180;
+            const particleGeometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+            const seeds = [];
+            for (let i = 0; i < particleCount; i++) {
+                const seed = {
+                    phase: Math.random() * Math.PI * 2,
+                    speed: 0.75 + Math.random() * 0.7,
+                    offsetY: (Math.random() - 0.5) * 1.3,
+                    offsetZ: (Math.random() - 0.5) * 1.8,
+                    offsetX: (Math.random() - 0.5) * 0.45
+                };
+                seeds.push(seed);
+                positions[i * 3] = source.x + seed.offsetX;
+                positions[i * 3 + 1] = source.y + seed.offsetY;
+                positions[i * 3 + 2] = source.z + seed.offsetZ;
+            }
+            particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            const particles = new THREE.Points(
+                particleGeometry,
+                new THREE.PointsMaterial({
+                    color: 0x38bdf8,
+                    size: 0.09,
+                    transparent: true,
+                    opacity: 0.86,
+                    depthWrite: false
+                })
+            );
+            scene.add(particles);
+
+            let flowCurve = new THREE.CatmullRomCurve3([
+                source,
+                new THREE.Vector3(-1.45, 1.78, -0.75),
+                new THREE.Vector3(-0.25, 1.5, -0.2),
+                new THREE.Vector3(0.85, 1.62, 0.05),
+                noseTarget
+            ]);
+            const flowLine = new THREE.Line(
+                new THREE.BufferGeometry().setFromPoints(flowCurve.getPoints(80)),
+                new THREE.LineBasicMaterial({ color: 0x60a5fa, transparent: true, opacity: 0.38 })
+            );
+            scene.add(flowLine);
+
+            const clock = new THREE.Clock();
+            let activeResult = null;
+            let animationStart = performance.now();
+            let lastCompletionState = false;
+            let currentActivityState = 'standing';
+
+            function updateFlowCurve() {
+                flowCurve = new THREE.CatmullRomCurve3([
+                    source,
+                    new THREE.Vector3(-1.45, noseTarget.y + 0.12, -0.75),
+                    new THREE.Vector3(-0.25, noseTarget.y - 0.08, -0.2),
+                    new THREE.Vector3((noseTarget.x + 0.85) / 2, noseTarget.y, 0.05),
+                    noseTarget.clone()
+                ]);
+                flowLine.geometry.dispose();
+                flowLine.geometry = new THREE.BufferGeometry().setFromPoints(flowCurve.getPoints(80));
+            }
+
+            function resetPersonPose() {
+                person.position.set(0, 0, 0);
+                person.rotation.set(0, 0, 0);
+                body.rotation.set(0, 0, 0);
+                head.rotation.set(0, 0, 0);
+                nose.rotation.set(0, 0, -Math.PI / 2);
+                legs.rotation.set(0, 0, 0);
+                legs.scale.set(1, 1, 1);
+                leftFoot.rotation.set(0, 0, 0);
+                rightFoot.rotation.set(0, 0, 0);
+                leftFoot.visible = false;
+                rightFoot.visible = false;
+                chair.visible = false;
+                bed.visible = false;
+            }
+
+            function applyHumanPose(activityState) {
+                resetPersonPose();
+                currentActivityState = activityState;
+
+                if (activityState === 'sleeping') {
+                    bed.visible = true;
+                    body.position.set(1.22, 0.82, 0);
+                    body.rotation.z = Math.PI / 2;
+                    head.position.set(0.35, 0.85, 0);
+                    nose.position.set(0.08, 0.86, 0);
+                    legs.position.set(2.05, 0.82, 0);
+                    legs.rotation.z = Math.PI / 2;
+                    noseTarget = new THREE.Vector3(-0.02, 0.86, 0);
+                } else if (activityState === 'sitting (resting)') {
+                    chair.visible = true;
+                    body.position.set(1.72, 1.02, 0);
+                    head.position.set(1.72, 1.62, 0);
+                    nose.position.set(1.45, 1.63, 0);
+                    legs.position.set(1.42, 0.53, 0);
+                    legs.rotation.z = Math.PI / 2;
+                    noseTarget = new THREE.Vector3(1.36, 1.63, 0);
+                } else {
+                    body.position.set(1.7, 0.95, 0);
+                    head.position.set(1.7, 1.65, 0);
+                    nose.position.set(1.43, 1.66, 0);
+                    legs.position.set(1.7, 0.35, 0);
+                    if (activityState === 'walking') {
+                        leftFoot.visible = true;
+                        rightFoot.visible = true;
+                        legs.scale.set(0.78, 1, 1);
+                    } else {
+                        legs.scale.set(1, 1, 1);
+                    }
+                    noseTarget = new THREE.Vector3(1.34, 1.66, 0);
+                }
+
+                updateFlowCurve();
+            }
+
+            function resize() {
+                const rect = canvas.getBoundingClientRect();
+                const width = Math.max(1, rect.width);
+                const height = Math.max(1, rect.height);
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+                renderer.setSize(width, height, false);
+            }
+
+            function interpolate(points, ratio) {
+                if (!points || points.length === 0) {
+                    return { x: 0, height: 0 };
+                }
+                const scaled = ratio * (points.length - 1);
+                const index = Math.floor(scaled);
+                const nextIndex = Math.min(index + 1, points.length - 1);
+                const local = scaled - index;
+                const current = points[index];
+                const next = points[nextIndex];
+                return {
+                    x: current.x + (next.x - current.x) * local,
+                    height: current.height + (next.height - current.height) * local
+                };
+            }
+
+            function setResult(result, activityState) {
+                activeResult = result;
+                animationStart = performance.now();
+                lastCompletionState = false;
+                applyHumanPose(activityState);
+                visualState.textContent = result ? 'Running selected CFD case' : 'Awaiting parameters';
+            }
+
+            function firstInhalationRatio(result) {
+                if (!result || !result.points || result.points.length === 0) {
+                    return 1;
+                }
+
+                const firstIndex = result.points.findIndex(function(point) {
+                    return point.height > 0;
+                });
+
+                if (firstIndex < 0) {
+                    return 1;
+                }
+
+                return firstIndex / Math.max(result.points.length - 1, 1);
+            }
+
+            function render() {
+                resize();
+                const elapsed = (performance.now() - animationStart) / 1000;
+                const loopDuration = 9;
+                const ratio = activeResult ? Math.min(elapsed / loopDuration, 1) : 0;
+                const isComplete = activeResult && ratio >= 1;
+                const resultPoint = activeResult ? interpolate(activeResult.points, ratio) : { x: 0, height: 0 };
+                const finalHeight = activeResult ? Math.max(activeResult.summary.final_height || 0, 1) : 1;
+                const inhaledRatio = Math.min(resultPoint.height / finalHeight, 1);
+                const time = activeResult ? Math.min(elapsed, loopDuration) : clock.getElapsedTime();
+                const firstArrivalRatio = firstInhalationRatio(activeResult);
+                const preInhalationProgress = firstArrivalRatio > 0
+                    ? Math.min(ratio / firstArrivalRatio, 1) * 0.78
+                    : 0.78;
+                const maxPathProgress = resultPoint.height > 0
+                    ? 0.78 + (0.22 * inhaledRatio)
+                    : preInhalationProgress;
+                const arrivedParticles = Math.floor(inhaledRatio * particleCount);
+                const walkingPhase = currentActivityState === 'walking' ? Math.sin(time * 5.4) : 0;
+
+                for (let i = 0; i < particleCount; i++) {
+                    const seed = seeds[i];
+                    const movingProgress = activeResult
+                        ? Math.min(maxPathProgress, (ratio * seed.speed) + (i / particleCount * maxPathProgress * 0.85))
+                        : (time * 0.05 + i / particleCount) % 0.78;
+                    const isArrived = activeResult && resultPoint.height > 0 && i < arrivedParticles;
+                    const p = isArrived
+                        ? 0.965 + Math.sin(seed.phase) * 0.012
+                        : movingProgress;
+                    const point = flowCurve.getPoint(p);
+                    const inhalationPull = Math.max(0, inhaledRatio - 0.05);
+                    const swirl = Math.sin(time * 2 + seed.phase + p * 8) * 0.12 * (1 - p);
+                    positions[i * 3] = point.x + seed.offsetX * (1 - p) + swirl;
+                    positions[i * 3 + 1] = point.y + seed.offsetY * (1 - p) + Math.cos(seed.phase + time) * 0.025 + inhalationPull * 0.04;
+                    positions[i * 3 + 2] = point.z + seed.offsetZ * (1 - p) + swirl * 0.5;
+                }
+                particleGeometry.attributes.position.needsUpdate = true;
+
+                if (currentActivityState === 'walking') {
+                    leftFoot.position.set(1.48 + walkingPhase * 0.26, 0.12, 0.22);
+                    rightFoot.position.set(1.92 - walkingPhase * 0.26, 0.12, -0.22);
+                    leftFoot.rotation.z = walkingPhase * 0.28;
+                    rightFoot.rotation.z = -walkingPhase * 0.28;
+                }
+
+                room.rotation.y = Math.sin(time * 0.18) * 0.035;
+                renderer.render(scene, camera);
+
+                if (activeResult) {
+                    visualTime.textContent = resultPoint.x.toFixed(resultPoint.x >= 10 ? 1 : 2);
+                    visualHeight.textContent = Math.round(resultPoint.height).toString();
+                    if (isComplete && !lastCompletionState) {
+                        visualState.textContent = 'CFD case completed';
+                        lastCompletionState = true;
+                    }
+                } else {
+                    visualTime.textContent = '-';
+                    visualHeight.textContent = '-';
+                }
+
+                requestAnimationFrame(render);
+            }
+
+            window.addEventListener('resize', resize);
+            applyHumanPose('standing');
+            render();
+
+            return { setResult: setResult };
+        }
+
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const payload = selectedPayload();
+            const matchingCases = window.cfdSimulations.filter(function(simulation) {
+                return matchesSimulation(simulation, payload);
+            });
+
+            payload.matching_case_count = matchingCases.length;
+            payload.matching_files = matchingCases.map(function(simulation) {
+                return simulation.file_name;
+            });
+
+            if (!visualizer) {
+                visualizer = createCfdVisualizer();
+            }
+
+            const matchingResult = matchingCases.length > 0
+                ? cfdResultsByFileName[matchingCases[0].file_name]
+                : null;
+
+            status.className = matchingCases.length > 0 ? 'alert alert-success mb-3' : 'alert alert-warning mb-3';
+            status.textContent = matchingCases.length > 0
+                ? 'Parameters submitted. Matching CFD case found.'
+                : 'Parameters submitted. No exact CFD case exists for this combination yet.';
+            payloadPreview.textContent = JSON.stringify(payload, null, 2);
+
+            visualizer.setResult(matchingResult || null, payload.activity_state);
+            if (!matchingResult) {
+                visualState.textContent = 'No CFD result for this configuration';
+            }
+        });
+    });
+</script>
+{% endblock %}

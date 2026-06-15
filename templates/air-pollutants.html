@@ -7,7 +7,7 @@
 
     <!-- Page breadcrumb -->
     {% from '_static/_breadcrumb.html' import render_breadcrumb %}
-    {{ render_breadcrumb('Human Digital Twin', 'Indoor Air Pollutants') }}
+    {{ render_breadcrumb('Human Digital Twin', 'Indoor Air Pollutants', 'wind') }}
 
     <!-- Page body -->
     <div class="page-body">
@@ -16,7 +16,7 @@
 
                 {% from 'air-pollutants-macro.html' import render_pollutant_card, render_jumbotron %}
 
-                {{ render_jumbotron('Indoor Air Pollutants', 'Track your historical air pollutant data measured by hardware and wearable devices in your indoor environment.') }}
+                {{ render_jumbotron('Indoor Air Pollutants', 'Track historical indoor air pollutants measured by hardware devices in your ambient environment.') }}
 
                 {% for pollutant, data in pollutants_info.items() %}
                     {{ render_pollutant_card(data.pollutant_name, data.pollutant_desc, data.pollutant_href) }}

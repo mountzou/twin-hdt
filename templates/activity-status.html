@@ -1,20 +1,280 @@
-{% extends 'base-air-pollutant.html' %}
+{% extends 'base.html' %}
 
 {% block title %}Activity Analysis{% endblock %}
 
 {% block content %}
 <div class="page">
 
-    <!-- Page breadcrumb -->
     {% from '_static/_breadcrumb.html' import render_breadcrumb %}
-    {{ render_breadcrumb('Human Digital Twin', 'Activity Analysis') }}
+    {{ render_breadcrumb('Human Digital Twin', 'Activity Analysis', 'person-running') }}
 
-    <!-- Page body -->
-    <div class="page-body" id="chart">
+    <div class="page-body">
         <div class="container-xl">
-            {% include 'activity-status-chart.html' %}
+            {% if portable_iaq_error %}
+            <div class="alert alert-warning" role="alert">{{ portable_iaq_error }}</div>
+            {% endif %}
+
+            <div class="row align-items-stretch">
+            <div class="col-9">
+            <div class="card mb-4 h-100 d-flex flex-column">
+                <div class="card-header activity-status-chart-head">
+                    <div class="activity-status-chart-head-top" aria-label="Air quality and activity status chart header">
+                        <h3 class="card-title pb-1 mb-0">Air quality and activity status</h3>
+                        <p class="wearable-device-subtitle chart-card-device-id activity-status-device-row">
+                            <i class="fas fa-heartbeat" aria-hidden="true"></i>
+                            <span class="device-id-text" title="{{ selected_wearable_id }}">{{ selected_wearable_id }}</span>
+                        </p>
+                        <p class="card-subtitle text-muted mb-0 activity-status-chart-subtitle">
+                            Uncover potential associations between air quality and activity status
+                        </p>
+                        <p class="wearable-device-subtitle chart-card-device-id activity-status-device-row">
+                            <i class="fas fa-microchip" aria-hidden="true"></i>
+                            <span class="device-id-text" title="{{ selected_portable_id }}">{{ selected_portable_id }}</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="card-body flex-fill">
+                    {% if co2_pm25_scatter_series %}
+                    <div id="co2-pm25-scatter" style="min-height: 420px;"></div>
+                    {% elif not portable_iaq_error %}
+                    <p class="text-muted mb-0">No overlapping portable and wearable measurements in the last 24 hours yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+            </div>
+            <div class="col-3 d-flex flex-column gap-2 h-100">
+                {% if not portable_iaq_error %}
+                    {% for card in activity_summary_cards %}
+                    <div class="card activity-status-state-card mb-0 flex-fill d-flex flex-column"
+                        style="--activity-color: {{ card.color }}; --activity-card-bg: {{ card.bg_color }};">
+                        <div class="card-body d-flex flex-column">
+                            <div class="activity-status-state-head mb-3">
+                                <div class="activity-status-state-label">
+                                    {% if card.name == 'Rest' %}
+                                        <i class="fa-solid fa-person activity-status-state-icon" aria-hidden="true"></i>
+                                    {% elif card.name == 'Walking' %}
+                                        <i class="fa-solid fa-person-walking activity-status-state-icon" aria-hidden="true"></i>
+                                    {% elif card.name == 'Exercise' %}
+                                        <i class="fa-solid fa-person-running activity-status-state-icon" aria-hidden="true"></i>
+                                    {% else %}
+                                        <i class="fa-solid fa-circle activity-status-state-icon" aria-hidden="true"></i>
+                                    {% endif %}
+                                    <h4 class="activity-status-state-title mb-0">{{ card.name }}</h4>
+                                </div>
+                                <span class="activity-status-state-share badge">{{ card.percent }}% of sample</span>
+                            </div>
+                            <div class="activity-status-state-metrics">
+                                <div class="activity-status-pollutant-block">
+                                    <div class="activity-status-pollutant-name">CO<sub>2</sub> <span class="text-muted">(ppm)</span></div>
+                                    <dl class="activity-status-stat-grid mb-0">
+                                        <dt>Min</dt><dd>{{ card.co2.min if card.co2.min is not none else '—' }}</dd>
+                                        <dt>Max</dt><dd>{{ card.co2.max if card.co2.max is not none else '—' }}</dd>
+                                        <dt>Avg</dt><dd>{{ card.co2.avg if card.co2.avg is not none else '—' }}</dd>
+                                    </dl>
+                                </div>
+                                <div class="activity-status-pollutant-block">
+                                    <div class="activity-status-pollutant-name">PM<sub>2.5</sub> <span class="text-muted">(µg/m³)</span></div>
+                                    <dl class="activity-status-stat-grid mb-0">
+                                        <dt>Min</dt><dd>{{ card.pm25.min if card.pm25.min is not none else '—' }}</dd>
+                                        <dt>Max</dt><dd>{{ card.pm25.max if card.pm25.max is not none else '—' }}</dd>
+                                        <dt>Avg</dt><dd>{{ card.pm25.avg if card.pm25.avg is not none else '—' }}</dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            </div>
+
         </div>
     </div>
 
 </div>
+
+{% if co2_pm25_scatter_series and not portable_iaq_error %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const co2Pm25Series = {{ co2_pm25_scatter_series | tojson }};
+        const chartEl = document.querySelector('#co2-pm25-scatter');
+
+        if (!chartEl || !window.ApexCharts || !co2Pm25Series.length) {
+            return;
+        }
+
+        const allPoints = co2Pm25Series.flatMap((entry) => entry.data || []);
+
+        function scatterAxisMax(values, fallbackPad) {
+            const finite = values.filter(Number.isFinite);
+            if (!finite.length) {
+                return undefined;
+            }
+            const minVal = Math.min(...finite);
+            const maxVal = Math.max(...finite);
+            const span = maxVal - minVal;
+            const pad = span > 0 ? span * 0.12 : fallbackPad;
+            return maxVal + pad;
+        }
+
+        function scatterAxisMin(values, offset) {
+            const finite = values.filter(Number.isFinite);
+            if (!finite.length) {
+                return 0;
+            }
+            return Math.min(...finite) - offset;
+        }
+
+        const pm25Values = allPoints.map((point) => point.y);
+        const xMax = scatterAxisMax(allPoints.map((point) => point.x), 10);
+        const yMin = scatterAxisMin(pm25Values, 0.5);
+        const yMax = scatterAxisMax(pm25Values, 0.5);
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, function (char) {
+                return ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;'
+                })[char];
+            });
+        }
+
+        const scatterAxisLabels = {
+            fontSize: '12px',
+            fontFamily: 'Nunito Sans, sans-serif',
+            fontWeight: 500
+        };
+
+        const scatterAxisTitle = {
+            fontSize: '12px',
+            fontFamily: 'Nunito Sans, sans-serif',
+            fontWeight: 600
+        };
+
+        const options = {
+            chart: {
+                type: 'scatter',
+                height: 420,
+                animations: {
+                    enabled: false,
+                    easing: 'linear',
+                    dynamicAnimation: { enabled: false }
+                },
+                toolbar: { show: false },
+                zoom: { enabled: false }
+            },
+            series: co2Pm25Series.map((entry) => ({
+                name: entry.name,
+                data: entry.data
+            })),
+            colors: co2Pm25Series.map((entry) => entry.color),
+            markers: {
+                size: 3.5,
+                strokeWidth: 0,
+                fillOpacity: 0.8,
+                hover: { size: 4 }
+            },
+            dataLabels: { enabled: false },
+            stroke: { width: 0 },
+            plotOptions: {
+                scatter: {
+                    markers: {
+                        strokeWidth: 0
+                    }
+                }
+            },
+            grid: {
+                borderColor: '#e6e8eb',
+                strokeDashArray: 4,
+                padding: { left: 46, right: 16, top: 8, bottom: 24 }
+            },
+            legend: {
+                show: true,
+                position: 'top',
+                fontFamily: 'Nunito Sans, sans-serif',
+                itemMargin: {
+                    horizontal: 10
+                },
+                markers: {
+                    size: 7,
+                    strokeWidth: 0
+                },
+                onItemClick: {
+                    toggleDataSeries: true
+                }
+            },
+            xaxis: {
+                type: 'numeric',
+                min: 0,
+                max: xMax,
+                decimalsInFloat: 1,
+                labels: {
+                    style: scatterAxisLabels,
+                    offsetY: 4
+                },
+                title: {
+                    text: 'CO2 (ppm)',
+                    style: scatterAxisTitle,
+                    offsetY: 22
+                },
+                tooltip: { enabled: false }
+            },
+            yaxis: {
+                min: yMin,
+                max: yMax,
+                tickAmount: 5,
+                decimalsInFloat: 1,
+                labels: {
+                    style: scatterAxisLabels,
+                    offsetX: 6
+                },
+                title: {
+                    text: 'PM2.5 (µg/m³)',
+                    style: scatterAxisTitle,
+                    offsetX: 0
+                }
+            },
+            tooltip: {
+                enabled: true,
+                shared: false,
+                intersect: true,
+                followCursor: true,
+                x: { show: false },
+                y: { show: false },
+                marker: { show: false },
+                custom: function ({ seriesIndex, dataPointIndex, w }) {
+                    const series = w.config.series[seriesIndex];
+                    if (!series) {
+                        return '';
+                    }
+                    const point = series.data[dataPointIndex];
+                    if (!point) return '';
+
+                    const bucket = point.bucket_display || '';
+                    const activityLabel = point.activity_label || '';
+                    const color = w.globals.colors[seriesIndex] || '#aeb4bd';
+                    const co2Reading = escapeHtml(point.x + ' ppm');
+                    const pm25Reading = escapeHtml(point.y + ' µg/m³');
+                    const detailLine = co2Reading + ' · ' + pm25Reading + ' · ' + escapeHtml(activityLabel);
+
+                    return ''
+                        + '<div class="hdt-chart-tooltip">'
+                        + '<div class="hdt-chart-tooltip-title">' + escapeHtml(bucket) + '</div>'
+                        + '<div class="hdt-chart-tooltip-body">'
+                        + '<span class="hdt-chart-tooltip-marker" style="background-color:' + color + ';"></span>'
+                        + '<span class="hdt-chart-tooltip-text">' + detailLine + '</span>'
+                        + '</div>'
+                        + '</div>';
+                }
+            }
+        };
+
+        const chart = new ApexCharts(chartEl, options);
+        chart.render();
+    });
+</script>
+{% endif %}
 {% endblock %}

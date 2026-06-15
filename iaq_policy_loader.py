@@ -8,6 +8,7 @@ DURATION_MAP = {
     "last_1h": "1h",
     "last_1d": "24h",
     "last_8h": "8h",
+    "last_24h": "24h",
 }
 
 POLLUTANTS = ("co2", "pm25", "tvoc")

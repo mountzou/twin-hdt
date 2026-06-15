@@ -8,35 +8,42 @@ const POLLUTANT_UNITS = {
 
 const DASHBOARD_BOOTSTRAP_ENDPOINT = '/get_init_pb_data';
 const IAQ_AVG_ENDPOINT = '/calculate/iaq/avg';
+const PREDICTIONS_ENDPOINT = '/calculate/predictions';
 const SOCKET_EVENT_NAME = 'new_mqtt_message';
-const LIVE_SERIES_CAP = 10;
+const LIVE_SERIES_CAP = 120;
 
 const INDEX_CHART_CONFIGS = [
     {
         key: 'co2',
         label: 'CO2',
         containerId: '#index-chart-co2',
+        stripContainerId: '#index-chart-co2-strip',
         threshold: 1000,
         unit: POLLUTANT_UNITS.CO2,
         maxValue: 2000,
-        cfdKey: 'co2'
+        cfdKey: 'co2',
+        breakpointLines: (window.IAQ_BREAKPOINTS && window.IAQ_BREAKPOINTS.co2) || []
     },
     {
         key: 'pm25',
         label: 'PM2.5',
         containerId: '#index-chart-pm25',
+        stripContainerId: '#index-chart-pm25-strip',
         threshold: 35,
         unit: POLLUTANT_UNITS.PM25,
         maxValue: 50,
-        cfdKey: 'pm25'
+        cfdKey: 'pm25',
+        breakpointLines: (window.IAQ_BREAKPOINTS && window.IAQ_BREAKPOINTS.pm25) || []
     },
     {
         key: 'tvoc',
         label: 'TVOC',
         containerId: '#index-chart-tvoc',
+        stripContainerId: '#index-chart-tvoc-strip',
         threshold: 500,
         unit: POLLUTANT_UNITS.TVOC,
-        maxValue: 300
+        maxValue: 300,
+        breakpointLines: (window.IAQ_BREAKPOINTS && window.IAQ_BREAKPOINTS.tvoc) || []
     }
 ];
 
@@ -58,8 +65,31 @@ const dashboardState = {
         co2: [],
         pm25: []
     },
-    timestamps: []
+    // Forecast bars appended to each pollutant chart.
+    forecast: {
+        co2:  { values: [], timestamps: [] },
+        pm25: { values: [], timestamps: [] },
+        tvoc: { values: [], timestamps: [] }
+    },
+    hourlyIaq: [],
+    timestamps: [],
+    latestMeasurementDateTime: null
 };
+
+// Live MQTT handler must wait until dashboard charts exist (not until every
+// slow follow-up request finishes — `await updateAllIaqPanels()` could block
+// `finally` and leave this promise pending forever).
+let resolveDashboardLiveReady;
+const dashboardLiveReady = new Promise(resolve => {
+    resolveDashboardLiveReady = resolve;
+});
+
+function signalDashboardLiveReady() {
+    if (typeof resolveDashboardLiveReady === 'function') {
+        resolveDashboardLiveReady();
+        resolveDashboardLiveReady = null;
+    }
+}
 
 
 // ================== PAYLOAD HELPERS ==================
@@ -82,11 +112,35 @@ function getAttributeValues(payload, attrName, maxValue) {
 }
 
 function setSeriesStateFromHistoricalData(payload) {
-    dashboardState.timestamps = (payload.index || []).map(formatDate).slice(0, -1);
+    const historicalIndex = payload.index || [];
+    dashboardState.timestamps = historicalIndex.map(formatDate).slice(0, -1);
+
+    const latestHistoricalTimestamp = historicalIndex.length > 0
+        ? historicalIndex[historicalIndex.length - 1]
+        : null;
+    dashboardState.latestMeasurementDateTime = latestHistoricalTimestamp || null;
 
     INDEX_CHART_CONFIGS.forEach(config => {
         dashboardState.series[config.key] = getAttributeValues(payload, config.key, config.maxValue).slice(0, -1);
     });
+}
+
+function renderDashboardUpdateTime(dateValue) {
+    const updateTimeElement = document.getElementById('updateTime');
+    if (!updateTimeElement || !dateValue) return;
+
+    const measurementDate = new Date(dateValue);
+    if (Number.isNaN(measurementDate.getTime())) return;
+
+    const options = {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit'
+    };
+
+    updateTimeElement.textContent = measurementDate.toLocaleString('en-US', options);
 }
 
 function setCfdState(cfdPayload) {
@@ -97,6 +151,24 @@ function setCfdState(cfdPayload) {
 function applyBootstrapPayload(payload) {
     setSeriesStateFromHistoricalData(payload.historical_chart_data || {});
     setCfdState(payload.cfd || {});
+    dashboardState.hourlyIaq = Array.isArray(payload.hourly_iaq) ? payload.hourly_iaq : [];
+}
+
+function renderDashboardHourlyStrips() {
+    if (typeof window.renderHourlyStrips !== 'function') return;
+    window.renderHourlyStrips(INDEX_CHART_CONFIGS, dashboardState.hourlyIaq || []);
+}
+
+function setDashboardChartLoading(isLoading) {
+    INDEX_CHART_CONFIGS.forEach(config => {
+        const chartId = (config.containerId || '').replace('#', '');
+        if (!chartId) return;
+
+        const shell = document.querySelector(`[data-chart-shell="${chartId}"]`);
+        if (!shell) return;
+
+        shell.classList.toggle('is-loading', isLoading);
+    });
 }
 
 
@@ -109,18 +181,20 @@ function initializeDashboardCharts() {
         dashboardState.series,
         dashboardState.timestamps,
         getChartStyles(),
-        dashboardState.cfd
+        dashboardState.cfd,
+        dashboardState.forecast
     );
 }
 
-function updateDashboardCharts() {
-    updateCharts(
+async function updateDashboardCharts() {
+    await updateCharts(
         INDEX_CHART_CONFIGS,
         dashboardState.chartInstances,
         dashboardState.series,
         dashboardState.timestamps,
         getChartStyles(),
-        dashboardState.cfd
+        dashboardState.cfd,
+        dashboardState.forecast
     );
 }
 
@@ -132,25 +206,106 @@ function pushAndTrimSeries(series, value, cap) {
 }
 
 function applyLiveSensorData(sensorData) {
-    if (sensorData.co2 !== undefined) {
-        pushAndTrimSeries(dashboardState.series.co2, sensorData.co2, chartConfigByKey.co2.maxValue);
-    }
-    if (sensorData.tvoc !== undefined) {
-        pushAndTrimSeries(dashboardState.series.tvoc, sensorData.tvoc, chartConfigByKey.tvoc.maxValue);
-    }
-    if (sensorData.pm25 !== undefined) {
-        pushAndTrimSeries(dashboardState.series.pm25, sensorData.pm25, chartConfigByKey.pm25.maxValue);
-    }
+    const hasPollutant =
+        sensorData.co2 !== undefined ||
+        sensorData.pm25 !== undefined ||
+        sensorData.tvoc !== undefined;
+
+    // One timestamp row must add one point to each series so lengths stay aligned
+    // with `dashboardState.timestamps` (see util-chart `pairLen` trimming).
     if (sensorData.observationDateTime !== undefined) {
+        dashboardState.latestMeasurementDateTime = sensorData.observationDateTime;
         dashboardState.timestamps.push(formatDate(sensorData.observationDateTime));
         if (dashboardState.timestamps.length > LIVE_SERIES_CAP) {
             dashboardState.timestamps.shift();
         }
+
+        const appendWithCarry = (key, field) => {
+            const cap = chartConfigByKey[key].maxValue;
+            const series = dashboardState.series[key];
+            const incoming = sensorData[field];
+            if (incoming !== undefined) {
+                pushAndTrimSeries(series, incoming, cap);
+            } else if (series.length > 0) {
+                pushAndTrimSeries(series, series[series.length - 1], cap);
+            } else {
+                pushAndTrimSeries(series, 0, cap);
+            }
+        };
+
+        appendWithCarry('co2', 'co2');
+        appendWithCarry('pm25', 'pm25');
+        appendWithCarry('tvoc', 'tvoc');
+        return;
     }
+
+    if (!hasPollutant) {
+        return;
+    }
+
+    const patchLast = (key, field) => {
+        if (sensorData[field] === undefined) return;
+        const cap = chartConfigByKey[key].maxValue;
+        const series = dashboardState.series[key];
+        const v = Math.min(sensorData[field], cap);
+        if (series.length > 0) {
+            series[series.length - 1] = v;
+        } else {
+            pushAndTrimSeries(series, v, cap);
+        }
+    };
+
+    patchLast('co2', 'co2');
+    patchLast('pm25', 'pm25');
+    patchLast('tvoc', 'tvoc');
 }
 
 
 // ================== FORECAST RENDERING ==================
+
+// Horizon definitions: which prediction keys to plot for each pollutant,
+// and how many minutes ahead each key represents.
+const FORECAST_HORIZONS = {
+    co2: [
+        { key: 'co2_pred_1min',  minutes: 1  },
+        { key: 'co2_pred_5min',  minutes: 5  },
+        { key: 'co2_pred_10min', minutes: 10 },
+        { key: 'co2_pred_15min', minutes: 15 }
+    ],
+    pm25: [
+        { key: 'pm25_pred_5min', minutes: 5 }
+    ]
+};
+
+// Populate dashboardState.forecast from a predictions payload.
+// Future timestamps are derived from the most recent measurement time.
+function setForecastFromPredictions(predictionsPayload) {
+    const baseTime = dashboardState.latestMeasurementDateTime
+        ? new Date(dashboardState.latestMeasurementDateTime)
+        : new Date();
+
+    const newForecast = {
+        co2:  { values: [], timestamps: [] },
+        pm25: { values: [], timestamps: [] },
+        tvoc: { values: [], timestamps: [] }
+    };
+
+    ['co2', 'pm25'].forEach(pollutant => {
+        const preds    = predictionsPayload[pollutant] || {};
+        const horizons = FORECAST_HORIZONS[pollutant] || [];
+
+        horizons.forEach(({ key, minutes }) => {
+            const pred = preds[key];
+            if (pred && pred.value != null && Number.isFinite(Number(pred.value))) {
+                newForecast[pollutant].values.push(Number(pred.value));
+                const futureTime = new Date(baseTime.getTime() + minutes * 60_000);
+                newForecast[pollutant].timestamps.push(formatDate(futureTime.toISOString()));
+            }
+        });
+    });
+
+    dashboardState.forecast = newForecast;
+}
 
 function updateForecasts(predictionsPayload) {
     const co2Predictions  = predictionsPayload.co2 || {};
@@ -158,12 +313,36 @@ function updateForecasts(predictionsPayload) {
 
     renderCO2Predictions(co2Predictions, POLLUTANT_UNITS.CO2);
     renderPm25Predictions(pm25Predictions, POLLUTANT_UNITS.PM25);
+    setForecastFromPredictions(predictionsPayload);
+}
+
+// Fetch fresh predictions from the server and update forecast state + text labels.
+// Chart re-render is left to the caller so it can batch with sensor updates.
+async function refreshPredictions() {
+    const response = await fetch(PREDICTIONS_ENDPOINT, {
+        method: 'GET',
+        credentials: 'include'
+    });
+
+    if (!response.ok) {
+        throw new Error(`Predictions request failed: ${response.statusText}`);
+    }
+
+    const predictionsPayload = await response.json();
+    updateForecasts(predictionsPayload);
 }
 
 
 // ================== IAQ PANELS ==================
 
-function renderIaqPanel(panelId, data, pollutantKey, displayName, dotClass, unit) {
+function tierDotClassName(policyColor) {
+    const tier = window.hdtIaqTheme && typeof window.hdtIaqTheme.policyColorToTier === 'function'
+        ? window.hdtIaqTheme.policyColorToTier(policyColor)
+        : 'grey';
+    return `status-dot iaq-tier-dot iaq-tier-dot--${tier}`;
+}
+
+function renderIaqPanel(panelId, data, pollutantKey, displayName, _dotClass, unit) {
     const panel = document.getElementById(panelId);
     if (!panel) return;
 
@@ -172,10 +351,8 @@ function renderIaqPanel(panelId, data, pollutantKey, displayName, dotClass, unit
     const v1h = last1h[pollutantKey];
     const v8h = last8h[pollutantKey];
 
-    if (!v1h && !v8h) {
-        panel.classList.add('d-none');
-        return;
-    }
+    // Keep the side panel visible even when the API temporarily returns
+    // missing IAQ windows (e.g. after refresh/race conditions).
     panel.classList.remove('d-none');
 
     const formatVal = obj => {
@@ -191,8 +368,8 @@ function renderIaqPanel(panelId, data, pollutantKey, displayName, dotClass, unit
 
     const block1h = panel.querySelector('.iaq-1h');
     const block8h = panel.querySelector('.iaq-8h');
-    const label1h = v1h ? capitalizeLabel(v1h.label) : '—';
-    const label8h = v8h ? capitalizeLabel(v8h.label) : '—';
+    const label1h = v1h ? capitalizeLabel(v1h.label) : 'No data';
+    const label8h = v8h ? capitalizeLabel(v8h.label) : 'No data';
     const value1h = formatVal(v1h);
     const value8h = formatVal(v8h);
 
@@ -202,7 +379,7 @@ function renderIaqPanel(panelId, data, pollutantKey, displayName, dotClass, unit
         const labelEl1 = block1h.querySelector('.iaq-label');
         const valueEl1 = block1h.querySelector('.iaq-value');
 
-        if (dot1) dot1.className = `status-dot ${dotClass}`;
+        if (dot1) dot1.className = v1h && v1h.color ? tierDotClassName(v1h.color) : 'status-dot iaq-tier-dot iaq-tier-dot--grey';
         if (name1) name1.textContent = displayName;
         if (labelEl1) labelEl1.textContent = label1h;
         if (valueEl1) valueEl1.textContent = value1h;
@@ -214,7 +391,7 @@ function renderIaqPanel(panelId, data, pollutantKey, displayName, dotClass, unit
         const labelEl8 = block8h.querySelector('.iaq-label');
         const valueEl8 = block8h.querySelector('.iaq-value');
 
-        if (dot8) dot8.className = `status-dot ${dotClass}`;
+        if (dot8) dot8.className = v8h && v8h.color ? tierDotClassName(v8h.color) : 'status-dot iaq-tier-dot iaq-tier-dot--grey';
         if (name8) name8.textContent = displayName;
         if (labelEl8) labelEl8.textContent = label8h;
         if (valueEl8) valueEl8.textContent = value8h;
@@ -280,34 +457,46 @@ async function fetchDashboardBootstrap() {
 }
 
 async function initializeDashboard() {
-    const payload = await fetchDashboardBootstrap();
-    const iaqPayload = payload.iaq || {};
+    setDashboardChartLoading(true);
 
-    applyBootstrapPayload(payload);
-    initializeDashboardCharts();
-    updateForecasts(payload.predictions || {});
+    try {
+        const payload = await fetchDashboardBootstrap();
+        const iaqPayload = payload.iaq || {};
 
-    if (hasIaqData(iaqPayload)) {
-        renderAllIaqPanels(iaqPayload);
-        if (typeof window.renderIaqCards === 'function') {
-            window.renderIaqCards(iaqPayload);
+        applyBootstrapPayload(payload);
+        renderDashboardUpdateTime(dashboardState.latestMeasurementDateTime);
+        // Populate forecast state BEFORE charts are initialised so the first
+        // render already includes the forecast bars.
+        updateForecasts(payload.predictions || {});
+        initializeDashboardCharts();
+        renderDashboardHourlyStrips();
+        signalDashboardLiveReady();
+
+        if (hasIaqData(iaqPayload)) {
+            renderAllIaqPanels(iaqPayload);
+            if (typeof window.renderIaqCards === 'function') {
+                window.renderIaqCards(iaqPayload);
+            }
+            document.dispatchEvent(new CustomEvent('hdt:iaq-ready', {
+                detail: iaqPayload
+            }));
+        } else {
+            await updateAllIaqPanels();
         }
-        document.dispatchEvent(new CustomEvent('hdt:iaq-ready', {
-            detail: iaqPayload
-        }));
-    } else {
-        await updateAllIaqPanels();
-    }
 
-    console.log('CFD CO2 values loaded:', dashboardState.cfd.co2);
-    console.log('CFD PM2.5 values loaded:', dashboardState.cfd.pm25);
+        console.log('CFD CO2 values loaded:', dashboardState.cfd.co2);
+        console.log('CFD PM2.5 values loaded:', dashboardState.cfd.pm25);
+    } finally {
+        setDashboardChartLoading(false);
+        signalDashboardLiveReady();
+    }
 }
 
 
 // ================== LIVE UPDATES ==================
 
 async function refreshLiveDerivedData() {
-    updateDashboardCharts();
+    await updateDashboardCharts();
 }
 
 function extractSensorPayload(message) {
@@ -319,28 +508,61 @@ function extractSensorPayload(message) {
     return JSON.parse(message.substring(jsonStartIndex));
 }
 
-function handleLiveSensorMessage(data) {
-    console.log('Received MQTT message:', data);
+async function handleLiveSensorMessage(data) {
+    await dashboardLiveReady;
 
-    const sensorData = extractSensorPayload(data.message);
-    applyLiveSensorData(sensorData);
-    updateAllIaqPanels();
+    try {
+        console.log('[hdt] MQTT → Socket.IO payload:', data);
 
-    refreshLiveDerivedData().catch(error => {
-        console.error('Error refreshing live chart state:', error);
-    });
+        const sensorData = extractSensorPayload(data.message);
+        applyLiveSensorData(sensorData);
+        renderDashboardUpdateTime(dashboardState.latestMeasurementDateTime);
+
+        // Charts + forecasts must not wait on IAQ `/calculate/iaq/avg` (can be slow
+        // or stall); that previously blocked every live bar update.
+        try {
+            await refreshPredictions();
+        } catch (error) {
+            console.error('Error refreshing predictions:', error);
+        }
+
+        await refreshLiveDerivedData();
+
+        void updateAllIaqPanels().catch(error => {
+            console.error('Error updating IAQ panels (non-blocking):', error);
+        });
+    } catch (error) {
+        console.error('Live sensor handling failed:', error);
+    }
 }
 
 function initializeLiveUpdates() {
-    const socket = io();
+    const socket = io({
+        transports: ['polling', 'websocket'],
+        withCredentials: true,
+        reconnection: true,
+        reconnectionAttempts: 20,
+        reconnectionDelay: 2000
+    });
+    socket.on('connect_error', err => {
+        console.error('[hdt] Socket.IO connect_error:', err && err.message ? err.message : err);
+    });
     socket.on(SOCKET_EVENT_NAME, handleLiveSensorMessage);
 }
 
 
 // ================== ENTRYPOINT ==================
+// `base.html` loads this script on every route; only the portable IAQ dashboard
+// Legacy dashboard chart hooks (`#index-chart-co2`) — only on pages that include them.
+// must not run bootstrap / Socket.IO listeners or they connect with no charts.
+function isPortableIaqDashboardPage() {
+    return Boolean(document.querySelector('#index-chart-co2'));
+}
 
-initializeDashboard().catch(error => {
-    console.error('There is a problem with dashboard initialization:', error);
-});
+if (isPortableIaqDashboardPage()) {
+    initializeDashboard().catch(error => {
+        console.error('There is a problem with dashboard initialization:', error);
+    });
 
-initializeLiveUpdates();
+    initializeLiveUpdates();
+}

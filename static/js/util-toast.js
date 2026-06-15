@@ -9,7 +9,7 @@ if (toastEl && !(window.hdtSession && window.hdtSession.requiresWearableSelectio
         .then(res => res.json())
         .then(data => {
             document.querySelector('.toast-body').innerHTML =
-                `You have been successfully connected with the wearable device: <code>${data.portable_id}</code>`;
+                `You have been successfully connected with the portable device: <code>${data.portable_id}</code>`;
 
             const toastEl = document.querySelector('.toast');
             const toast = new bootstrap.Toast(toastEl);

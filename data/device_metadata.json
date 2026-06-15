@@ -1,0 +1,45 @@
+{
+  "tenants": {
+    "trikala": {
+      "users": {
+        "trikala-test": {
+          "email": "trikala@test.com",
+          "devices": [
+            {
+              "id": "urn:ngsi-ld:wsensors:eui-0080e1150510bde6",
+              "type": "portable"
+            },
+            {
+              "id": "urn:ngsi-ld:wsensors:eui-0080e1150510bdeb",
+              "type": "wearable"
+            }
+          ]
+        },
+        "trikala-upat": {
+          "devices": [
+            {
+              "id": "urn:ngsi-ld:wsensors:eui-0080e1150510b77b",
+              "type": "portable"
+            },
+            {
+              "id": "urn:ngsi-ld:wsensors:dummy-wearable-2",
+              "type": "wearable"
+            }
+          ]
+        },
+        "dummy-trikala-2": {
+          "devices": [
+            {
+              "id": "urn:ngsi-ld:wsensors:mar-0080e1150533f233",
+              "type": "portable"
+            },
+            {
+              "id": "urn:ngsi-ld:wsensors:dummy-wearable-1",
+              "type": "wearable"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

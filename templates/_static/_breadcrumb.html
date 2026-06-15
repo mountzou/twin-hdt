@@ -1,4 +1,4 @@
-{% macro render_breadcrumb(page_pre_title, page_title) %}
+{% macro render_breadcrumb(page_pre_title, page_title, icon=None) %}
 <div class="page-header d-print-none" id="breadcrumb">
     <div class="container-xl">
         <div class="row g-2 align-items-center">
@@ -6,7 +6,10 @@
                 <div class="page-pretitle">
                     {{ page_pre_title }}
                 </div>
-                <h2 class="page-title">
+                <h2 class="page-title breadcrumb-title">
+                    {% if icon %}
+                    <span class="breadcrumb-title-icon"><i class="fas fa-{{ icon }}"></i></span>
+                    {% endif %}
                     {{ page_title }}
                 </h2>
             </div>

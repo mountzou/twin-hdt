@@ -34,7 +34,7 @@ function createIaqCardsContent(pollutantNameText, pollutantNameHtml, unit, timeL
 
 // Render a single pollutant card from the IAQ payload.
 function addIaqCardsContent(pollutantNames, pollutantData, cardIndex) {
-    const cards = document.querySelectorAll('.card');
+    const cards = document.querySelectorAll('.iaq-summary-card');
     const card = cards[cardIndex];
 
     if (!card) return;
@@ -64,20 +64,21 @@ function addIaqCardsContent(pollutantNames, pollutantData, cardIndex) {
         iconImg.src = `/static/icons/${pollutantData.icon}`;
     }
 
-    if (pollutantData?.color && iconBox) {
-        const color = pollutantData.color;
+    const tier = window.hdtIaqTheme && typeof window.hdtIaqTheme.policyColorToTier === 'function'
+        ? window.hdtIaqTheme.policyColorToTier(pollutantData?.color)
+        : 'grey';
 
-        [
-            'text-success', 'text-green', 'text-red',
-            'text-yellow', 'text-orange', 'text-danger', 'text-grey'
-        ].forEach(cssClass => titleEl.classList.remove(cssClass));
-        titleEl.classList.add(`text-${color}`);
+    const tierTextClasses = ['iaq-tier-text--good', 'iaq-tier-text--moderate', 'iaq-tier-text--poor', 'iaq-tier-text--grey'];
+    const tierBgClasses = ['iaq-tier-bg--good', 'iaq-tier-bg--moderate', 'iaq-tier-bg--poor', 'iaq-tier-bg--grey'];
+    const legacyText = ['text-success', 'text-green', 'text-red', 'text-yellow', 'text-orange', 'text-danger', 'text-grey'];
+    const legacyBg = ['bg-success', 'bg-green', 'bg-red', 'bg-yellow', 'bg-orange', 'bg-danger', 'bg-grey'];
 
-        [
-            'bg-success', 'bg-green', 'bg-red',
-            'bg-yellow', 'bg-orange', 'bg-danger', 'bg-grey'
-        ].forEach(cssClass => iconBox.classList.remove(cssClass));
-        iconBox.classList.add(`bg-${color}`);
+    tierTextClasses.concat(legacyText).forEach(cssClass => titleEl.classList.remove(cssClass));
+    titleEl.classList.add(`iaq-tier-text--${tier}`);
+
+    if (iconBox) {
+        tierBgClasses.concat(legacyBg).forEach(cssClass => iconBox.classList.remove(cssClass));
+        iconBox.classList.add(`iaq-tier-bg--${tier}`);
     }
 }
 

@@ -1,0 +1,206 @@
+{
+  "source": "cfd_metadata.csv",
+  "record_count": 13,
+  "defaults": {
+    "simulation_file_extension": "txt",
+    "air_velocity_unit": "m/s",
+    "execution_status": "completed"
+  },
+  "simulations": [
+    {
+      "id": 1,
+      "file_name": "50_part_in_2e-3T20.txt",
+      "initial_conditions": {
+        "pm25": 50,
+        "air_velocity": 0.002,
+        "pm25_distribution": "random"
+      },
+      "subject": {
+        "gender": "male",
+        "age_years": 35,
+        "health_state": "normal"
+      },
+      "activity_state": "sitting (resting)"
+    },
+    {
+      "id": 2,
+      "file_name": "100_part_in_2e-3T20_v0.1.txt",
+      "initial_conditions": {
+        "pm25": 100,
+        "air_velocity": 0.002,
+        "pm25_distribution": "random"
+      },
+      "subject": {
+        "gender": "male",
+        "age_years": 35,
+        "health_state": "normal"
+      },
+      "activity_state": "sitting (resting)"
+    },
+    {
+      "id": 3,
+      "file_name": "100_part_in_2e-3T20_v0.1_outlet0.06.txt",
+      "initial_conditions": {
+        "pm25": 100,
+        "air_velocity": 0.002,
+        "pm25_distribution": "random"
+      },
+      "subject": {
+        "gender": "male",
+        "age_years": 35,
+        "health_state": "normal"
+      },
+      "activity_state": "sleeping"
+    },
+    {
+      "id": 4,
+      "file_name": "95_part_in_2e-3T20_v0.1.txt",
+      "initial_conditions": {
+        "pm25": 95,
+        "air_velocity": 0.002,
+        "pm25_distribution": "random"
+      },
+      "subject": {
+        "gender": "male",
+        "age_years": 35,
+        "health_state": "normal"
+      },
+      "activity_state": "sitting (resting)"
+    },
+    {
+      "id": 5,
+      "file_name": "102_part_in_2e-3T20_v0.1.txt",
+      "initial_conditions": {
+        "pm25": 102,
+        "air_velocity": 0.002,
+        "pm25_distribution": "random"
+      },
+      "subject": {
+        "gender": "male",
+        "age_years": 35,
+        "health_state": "normal"
+      },
+      "activity_state": "sitting (resting)"
+    },
+    {
+      "id": 6,
+      "file_name": "25_part_in_2e-3T20_v0.1.txt",
+      "initial_conditions": {
+        "pm25": 25,
+        "air_velocity": 0.002,
+        "pm25_distribution": "random"
+      },
+      "subject": {
+        "gender": "male",
+        "age_years": 35,
+        "health_state": "normal"
+      },
+      "activity_state": "sitting (resting)"
+    },
+    {
+      "id": 7,
+      "file_name": "35_part_in_2e-3T20_v0.1.txt",
+      "initial_conditions": {
+        "pm25": 35,
+        "air_velocity": 0.002,
+        "pm25_distribution": "random"
+      },
+      "subject": {
+        "gender": "male",
+        "age_years": 35,
+        "health_state": "normal"
+      },
+      "activity_state": "sitting (resting)"
+    },
+    {
+      "id": 9,
+      "file_name": "42_part_in_2e-3T20_v0.1.txt",
+      "initial_conditions": {
+        "pm25": 42,
+        "air_velocity": 0.002,
+        "pm25_distribution": "random"
+      },
+      "subject": {
+        "gender": "male",
+        "age_years": 35,
+        "health_state": "normal"
+      },
+      "activity_state": "sitting (resting)"
+    },
+    {
+      "id": 10,
+      "file_name": "42_part_in_2e-3T20_v0.1.txt",
+      "initial_conditions": {
+        "pm25": 50,
+        "air_velocity": 0.005,
+        "pm25_distribution": "random"
+      },
+      "subject": {
+        "gender": "male",
+        "age_years": 35,
+        "health_state": "normal"
+      },
+      "activity_state": "walking"
+    },
+    {
+      "id": 11,
+      "file_name": "42_part_in_2e-3T20_v0.1.txt",
+      "initial_conditions": {
+        "pm25": 42,
+        "air_velocity": 0.004,
+        "pm25_distribution": "random"
+      },
+      "subject": {
+        "gender": "male",
+        "age_years": 35,
+        "health_state": "normal"
+      },
+      "activity_state": "walking"
+    },
+    {
+      "id": 12,
+      "file_name": "42_part_in_2e-3T20_v0.1.txt",
+      "initial_conditions": {
+        "pm25": 42,
+        "air_velocity": 0.004,
+        "pm25_distribution": "random"
+      },
+      "subject": {
+        "gender": "male",
+        "age_years": 35,
+        "health_state": "normal"
+      },
+      "activity_state": "walking"
+    },
+    {
+      "id": 17,
+      "file_name": "20_part_in_5e-3T20_v0.1_walking_ or_window_open_extreme_velosity_200_released.txt",
+      "initial_conditions": {
+        "pm25": 20,
+        "air_velocity": 0.005,
+        "pm25_distribution": "random"
+      },
+      "subject": {
+        "gender": "male",
+        "age_years": 35,
+        "health_state": "normal"
+      },
+      "activity_state": "cooking (released 100)"
+    },
+    {
+      "id": 18,
+      "file_name": "10_part_in_2e-3T20_v0.1_low_velosity_300_released.txt",
+      "initial_conditions": {
+        "pm25": 10,
+        "air_velocity": 0.002,
+        "pm25_distribution": "random"
+      },
+      "subject": {
+        "gender": "male",
+        "age_years": 35,
+        "health_state": "normal"
+      },
+      "activity_state": "cooking (released 100)"
+    }
+  ]
+}

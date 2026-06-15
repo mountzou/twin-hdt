@@ -1,0 +1,76 @@
+.health-rec-page {
+    padding-bottom: 1.5rem;
+}
+
+.health-rec-page .card {
+    border: 1px solid var(--tblr-gray-200, #eef1f4);
+    box-shadow: none;
+}
+
+.hr-summary-row .hr-summary-card {
+    height: 100%;
+}
+
+.hr-summary-row .hr-summary-card .card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.hr-summary-row .card-body {
+    display: flex;
+    flex-direction: column;
+}
+
+.hr-advice {
+    font-weight: 600;
+}
+
+.hr-hour-value {
+    color: var(--tblr-secondary, #656d77);
+    font-weight: 400;
+}
+
+.hr-hour-value strong {
+    font-weight: 600;
+    color: inherit;
+}
+
+.hr-worst-card {
+    height: 100%;
+}
+
+.hr-worst-card .card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.hr-7d-strip {
+    overflow-x: auto;
+    overflow-y: visible;
+    padding-bottom: 0.25rem;
+}
+
+.hr-7d-strip .hourly-strip-bars {
+    min-width: 42rem;
+    gap: 1px;
+}
+
+.hr-7d-strip .hourly-strip-bar {
+    flex: 1 0 3px;
+    min-width: 3px;
+    max-width: 6px;
+}
+
+.hr-7d-strip .hourly-strip-axis span {
+    font-size: 0.65rem;
+}
+
+.hr-7d-strip .hourly-strip-bar:hover {
+    transform: none;
+}
+
+@media (max-width: 991.98px) {
+    .hr-summary-row .col-lg-4 + .col-lg-4 {
+        margin-top: 0;
+    }
+}

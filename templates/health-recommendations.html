@@ -1,0 +1,143 @@
+{% extends 'base-health-recommendations.html' %}
+
+{% block title %}Health Recommendations{% endblock %}
+
+{% block content %}
+<div class="page">
+
+    {% from '_static/_breadcrumb.html' import render_breadcrumb %}
+    {{ render_breadcrumb('Human Digital Twin', 'Health Recommendations', 'lungs') }}
+
+    <div class="page-body">
+        <div class="container-xl health-rec-page">
+
+            <div id="hr-empty-state" class="card d-none">
+                <div class="card-body">
+                    <h3 class="card-title">No portable air quality data</h3>
+                    <p class="text-secondary mb-0">
+                        No measurements from your portable device were found in the last 7 days.
+                        Device ID: <span id="hr-device-id">{{ selected_portable_id }}</span>
+                    </p>
+                </div>
+            </div>
+
+            <div id="hr-content" class="d-none">
+
+                <div class="row row-cards row-deck mb-3 hr-summary-row">
+                    <div class="col-md-12 col-lg-4">
+                        <div class="card hr-summary-card" id="hr-composite-card">
+                            <div class="card-stamp">
+                                <div class="card-stamp-icon iaq-tier-bg--grey" id="hr-composite-stamp">
+                                    <img class="icon" id="hr-composite-icon" src="{{ url_for('static', filename='icons/iaq-good.svg') }}" alt="">
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h3 class="text-secondary mb-2">IAQ score</h3>
+                                <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                    <h3 class="card-title mb-0 iaq-tier-text--grey" id="hr-composite-status">—</h3>
+                                    <span class="badge bg-secondary-lt">Latest 1-hour average</span>
+                                </div>
+                                <p class="mb-2 hr-advice" id="hr-composite-advice">—</p>
+                                <span class="badge iaq-tier-badge-lt--grey" id="hr-composite-driver">Primary driver: —</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card hr-summary-card" id="hr-pm25-card">
+                            <div class="card-stamp">
+                                <div class="card-stamp-icon iaq-tier-bg--grey" id="hr-pm25-stamp">
+                                    <img class="icon" id="hr-pm25-icon" src="{{ url_for('static', filename='icons/iaq-good.svg') }}" alt="">
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h3 class="text-secondary mb-2">PM<sub>2.5</sub> score</h3>
+                                <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                    <h3 class="card-title mb-0 iaq-tier-text--grey" id="hr-pm25-status">—</h3>
+                                    <span class="badge bg-secondary-lt">Latest 1-hour average</span>
+                                </div>
+                                <p class="text-secondary mb-2 hr-hour-value" id="hr-pm25-value">—</p>
+                                <p class="mb-0 hr-advice" id="hr-pm25-advice">—</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card hr-summary-card" id="hr-co2-card">
+                            <div class="card-stamp">
+                                <div class="card-stamp-icon iaq-tier-bg--grey" id="hr-co2-stamp">
+                                    <img class="icon" id="hr-co2-icon" src="{{ url_for('static', filename='icons/iaq-good.svg') }}" alt="">
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h3 class="text-secondary mb-2">CO<sub>2</sub> score</h3>
+                                <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                    <h3 class="card-title mb-0 iaq-tier-text--grey" id="hr-co2-status">—</h3>
+                                    <span class="badge bg-secondary-lt">Latest 1-hour average</span>
+                                </div>
+                                <p class="text-secondary mb-2 hr-hour-value" id="hr-co2-value">—</p>
+                                <p class="mb-0 hr-advice" id="hr-co2-advice">—</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row row-cards row-deck mb-3 d-none" id="hr-worst-row">
+                    <div class="col-md-6 d-none" id="hr-worst-col-0">
+                        <div class="card hr-worst-card mb-0" id="hr-worst-card-0">
+                            <div class="card-body">
+                                <div class="d-flex flex-wrap align-items-start justify-content-between gap-2 mb-2">
+                                    <h3 class="card-title mb-0 iaq-tier-text--grey" id="hr-worst-status-0">—</h3>
+                                    <span class="badge bg-secondary-lt text-secondary" id="hr-worst-time-0">—</span>
+                                </div>
+                                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                                    <p class="text-secondary mb-0 hr-hour-value" id="hr-worst-values-0">—</p>
+                                    <span class="badge iaq-tier-badge-lt--grey" id="hr-worst-driver-0">Primary driver: —</span>
+                                </div>
+                                <p class="mb-0 hr-advice" id="hr-worst-advice-0">—</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 d-none" id="hr-worst-col-1">
+                        <div class="card hr-worst-card mb-0" id="hr-worst-card-1">
+                            <div class="card-body">
+                                <div class="d-flex flex-wrap align-items-start justify-content-between gap-2 mb-2">
+                                    <h3 class="card-title mb-0 iaq-tier-text--grey" id="hr-worst-status-1">—</h3>
+                                    <span class="badge bg-secondary-lt text-secondary" id="hr-worst-time-1">—</span>
+                                </div>
+                                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                                    <p class="text-secondary mb-0 hr-hour-value" id="hr-worst-values-1">—</p>
+                                    <span class="badge iaq-tier-badge-lt--grey" id="hr-worst-driver-1">Primary driver: —</span>
+                                </div>
+                                <p class="mb-0 hr-advice" id="hr-worst-advice-1">—</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex flex-wrap align-items-start justify-content-between gap-2 mb-2">
+                            <div>
+                                <h3 class="text-secondary mb-0">IAQ score</h3>
+                                <p class="text-secondary mb-0">Track the average hourly IAQ conditions in your surroundings</p>
+                            </div>
+                            <span class="badge bg-secondary-lt text-secondary">Latest 7 days</span>
+                        </div>
+                        <div id="hr-7d-strip" class="hourly-strip hr-7d-strip"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div id="hr-loading" class="card">
+                <div class="card-body">
+                    <div class="placeholder col-8 mb-2"></div>
+                    <div class="placeholder col-12"></div>
+                    <div class="placeholder col-10"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}

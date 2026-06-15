@@ -20,18 +20,31 @@
             <div class="nav-item dropdown">
                 <a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown"
                    aria-label="Open user menu">
-                    <span class="avatar avatar-sm" style="background-image: url(./static/avatars/000m.jpg)">N/A</span>
+                    <span class="avatar avatar-sm avatar-rounded">TU</span>
                     <div class="d-none d-xl-block ps-2">
-                        <div id="account-user-name">Chris Mountzouris</div>
+                        <div id="account-user-name" class="fw-medium">TwinAIR User</div>
                         <div id="account-user-id" class="mt-1 small text-muted">{{ session['tenant'] }}</div>
                     </div>
                 </a>
                 <!-- User's dropdown menu items -->
                 <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                    <a href="/profile" class="dropdown-item">Profile</a>
-                    <a href="/security" class="dropdown-item">Security</a>
-                    <a href="/settings" class="dropdown-item">Settings</a>
-                    <a href="/logout" class="dropdown-item">Logout</a>
+                    <a href="/profile" class="dropdown-item">
+                        <span class="dropdown-item-icon"><i class="fas fa-user"></i></span>
+                        Profile
+                    </a>
+                    <a href="/security" class="dropdown-item">
+                        <span class="dropdown-item-icon"><i class="fas fa-shield-alt"></i></span>
+                        Security
+                    </a>
+                    <a href="/settings" class="dropdown-item">
+                        <span class="dropdown-item-icon"><i class="fas fa-cog"></i></span>
+                        Settings
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="/logout" class="dropdown-item">
+                        <span class="dropdown-item-icon"><i class="fas fa-sign-out-alt"></i></span>
+                        Logout
+                    </a>
                 </div>
             </div>
 

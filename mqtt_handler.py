@@ -17,6 +17,7 @@ TOPIC_PORTABLE = None
 TOPIC_WEARABLE = None
 
 socketio = None
+_flask_app = None
 
 _mqtt_started = False
 
@@ -32,6 +33,28 @@ _staged_line = None
 def set_socketio(io):
     global socketio
     socketio = io
+
+
+def set_flask_app_for_mqtt(app):
+    """Required so emits from the MQTT thread run inside an application context."""
+    global _flask_app
+    _flask_app = app
+
+
+def _emit_new_mqtt_message(pay_line: str) -> None:
+    """Notify browser clients; safe to call from the MQTT client thread."""
+    global socketio, _flask_app
+    if not socketio:
+        return
+    try:
+        if _flask_app is not None:
+            with _flask_app.app_context():
+                socketio.emit("new_mqtt_message", {"message": pay_line}, namespace="/")
+        else:
+            socketio.emit("new_mqtt_message", {"message": pay_line}, namespace="/")
+        print(f"[mqtt][socket] emitted new_mqtt_message ({len(pay_line)} bytes)", flush=True)
+    except Exception:
+        logging.exception("socketio emit new_mqtt_message failed")
 
 
 # Define the MQTT topic for the user's PORTABLE device.
@@ -98,22 +121,22 @@ def _on_message(client, userdata, msg):
 
     payLine = f"{msg.topic}: {payload}"
 
-    # --- First message ---
+    # Live dashboard: notify on every valid payload (not only on minute rollover).
+    # Previously the UI could miss the first sample and wait until the next minute.
+    _emit_new_mqtt_message(payLine)
+
+    # Ring buffer: keep one line per minute (latest payload in that minute).
     if _current_minute_key is None:
         _current_minute_key = minute_key
         _staged_line = payLine
         return
 
-    # --- Same minute → replace staged line ---
     if minute_key == _current_minute_key:
         _staged_line = payLine
         return
 
-    # --- New minute → flush + stage new one ---
     if _staged_line is not None:
         mqtt_messages.append(_staged_line)
-        if socketio:
-            socketio.emit("new_mqtt_message", {"message": _staged_line})
         print(f"[mqtt][POOL] flushed minute: {_current_minute_key.isoformat()}")
 
     _current_minute_key = minute_key

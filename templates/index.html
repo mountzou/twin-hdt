@@ -2,65 +2,1783 @@
 
 {% block title %}Dashboard{% endblock %}
 
-{% block additional_css %}
-<!-- Any additional CSS specific to the index page can go here -->
+{% block extra_styles %}
+<link href="{{ url_for('static', filename='css/index.css') }}" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
-<div class="page">
-
-    <!-- Page header -->
+<script>
+  window.INDEX_IAQ_BREAKPOINTS = {{ (chart_breakpoints or {}) | tojson }};
+</script>
+<div class="page air-demo">
     <div class="page-header d-print-none">
         <div class="container-xl">
             <div class="row g-2 align-items-center">
                 <div class="col">
-                    <!-- Page pre-title -->
                     <div class="page-pretitle">
                         Human Digital Twin
                     </div>
-                    <h2 class="page-title">
+                    <h2 class="page-title breadcrumb-title">
+                        <span class="breadcrumb-title-icon"><i class="fas fa-home"></i></span>
                         Dashboard
                     </h2>
-                </div>
-                <div class="col-auto ms-auto">
-                    <!-- Update time -->
-                    <div class="page-update-time">
-                        Last update: <span id="updateTime"></span>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Page body -->
     <div class="page-body">
         <div class="container-xl">
+            <div class="air-shell">
+        <section class="air-summary-stack" aria-label="IAQ recommendations">
             {% include 'index-card-health-recommendations.html' %}
+        </section>
+
+        <section class="air-grid" aria-label="Current air quality summary">
+            <section class="air-card pollutants" aria-label="Wearable physiological metrics">
+                <div class="wearable-head">
+                    <div class="wearable-head-top">
+                        <h3 class="wearable-title">Wearable device</h3>
+                        <span class="wearable-metric-badge">Physiological metrics</span>
+                    </div>
+                    <p class="wearable-device-subtitle"><i class="fas fa-heartbeat" aria-hidden="true"></i><span class="device-id-text">{{ selected_wearable_id or 'No wearable device' }}</span></p>
+                </div>
+                <div class="pollutant-row" data-index1-vital="spo2">
+                    <div class="pollutant-token pollutant-token-box"><i class="fa-solid fa-mask-ventilator" aria-label="SpO2"></i></div>
+                    <div>
+                        <h3 class="pollutant-name">Blood oxygen<br>saturation</h3>
+                        <div class="pollutant-sub">1h avg &middot; <span data-index1-vital-avg>--</span> <span data-index1-vital-avg-unit>%</span></div>
+                    </div>
+                    <div class="spark" id="sparkSpo2"></div>
+                    <div class="pollutant-value">
+                        <span data-index1-vital-latest>--</span><span class="unit">%</span>
+                        <div class="vital-confidence"><span data-index1-vital-confidence>Conf: -</span></div>
+                    </div>
+                    <div class="air-status"><span class="air-dot"></span><span data-index1-vital-status>-</span></div>
+                </div>
+
+                <div class="pollutant-row" data-index1-vital="activityClass">
+                    <div class="pollutant-token pollutant-token-box"><i class="fa-solid fa-person-walking" aria-label="Activity"></i></div>
+                    <div>
+                        <h3 class="pollutant-name">Activity class</h3>
+                        <div class="pollutant-sub">1h mode &middot; <span data-index1-vital-avg>--</span></div>
+                    </div>
+                    <div class="spark" id="sparkActivity"></div>
+                    <div class="pollutant-value">
+                        <span data-index1-vital-latest>--</span>
+                    </div>
+                    <div class="air-status"><span class="air-dot"></span><span data-index1-vital-status>-</span></div>
+                </div>
+
+                <div class="pollutant-row" data-index1-vital="heartRate">
+                    <div class="pollutant-token pollutant-token-box"><i class="fa-regular fa-heart" aria-label="Heart rate"></i></div>
+                    <div>
+                        <h3 class="pollutant-name">Heart rate</h3>
+                        <div class="pollutant-sub">1h avg &middot; <span data-index1-vital-avg>--</span> <span data-index1-vital-avg-unit>bpm</span></div>
+                    </div>
+                    <div class="spark" id="sparkHr"></div>
+                    <div class="pollutant-value">
+                        <span data-index1-vital-latest>--</span><span class="unit">bpm</span>
+                        <div class="vital-confidence"><span data-index1-vital-confidence>Conf: -</span></div>
+                    </div>
+                    <div class="air-status"><span class="air-dot"></span><span data-index1-vital-status>-</span></div>
+                </div>
+            </section>
+
+            <article class="air-card pollutants" aria-label="Portable device metrics">
+                <div class="wearable-head">
+                    <div class="wearable-head-top">
+                        <h3 class="wearable-title">Portable device</h3>
+                        <span class="wearable-metric-badge">Air quality metrics</span>
+                    </div>
+                    <p class="wearable-device-subtitle"><i class="fas fa-microchip" aria-hidden="true"></i><span class="device-id-text">{{ selected_portable_id or 'No portable device' }}</span></p>
+                </div>
+                <div class="pollutant-row" data-index1-pollutant="co2">
+                    <div class="pollutant-token pollutant-token-box"><i class="fas fa-wind" aria-label="CO2"></i></div>
+                    <div>
+                        <h3 class="pollutant-name">Carbon dioxide</h3>
+                        <div class="pollutant-sub">1h avg &middot; <span data-index1-avg>--</span> <span data-index1-avg-unit>ppm</span></div>
+                    </div>
+                    <div class="spark" id="sparkCo2"></div>
+                    <div class="pollutant-value"><span data-index1-latest>--</span><span class="unit">ppm</span></div>
+                    <div class="air-status"><span class="air-dot"></span><span data-index1-status>Loading</span></div>
+                </div>
+
+                <div class="pollutant-row" data-index1-pollutant="pm25">
+                    <div class="pollutant-token pollutant-token-box"><i class="fa-solid fa-spray-can-sparkles" aria-label="PM2.5"></i></div>
+                    <div>
+                        <h3 class="pollutant-name">Fine particulate<br>matter</h3>
+                        <div class="pollutant-sub">1h avg &middot; <span data-index1-avg>--</span> <span data-index1-avg-unit>&micro;g/m&sup3;</span></div>
+                    </div>
+                    <div class="spark" id="sparkPm"></div>
+                    <div class="pollutant-value"><span data-index1-latest>--</span><span class="unit">&micro;g/m&sup3;</span></div>
+                    <div class="air-status"><span class="air-dot"></span><span data-index1-status>Loading</span></div>
+                </div>
+
+                <div class="pollutant-row" data-index1-pollutant="tvoc">
+                    <div class="pollutant-token pollutant-token-box"><i class="fa-solid fa-smog" aria-label="TVOC"></i></div>
+                    <div>
+                        <h3 class="pollutant-name">Volatile organic<br>compounds</h3>
+                        <div class="pollutant-sub">1h avg &middot; <span data-index1-avg>--</span> <span data-index1-avg-unit></span></div>
+                    </div>
+                    <div class="spark" id="sparkTvoc"></div>
+                    <div class="pollutant-value"><span data-index1-latest>--</span><span class="unit"></span></div>
+                    <div class="air-status"><span class="air-dot"></span><span data-index1-status>-</span></div>
+                </div>
+            </article>
+        </section>
+
+        <section class="air-card air-chart-card" aria-label="Latest pollutant measurements and forecast">
+            <div class="chart-card-head">
+                <div class="chart-card-head-top">
+                    <h3 class="chart-card-title">Latest pollutant measurements</h3>
+                    <p class="wearable-device-subtitle chart-card-device-id">
+                        <i class="fas fa-microchip" aria-hidden="true"></i>
+                        <span class="device-id-text" title="{{ selected_portable_id or 'No portable device' }}">{{ selected_portable_id or 'No portable device' }}</span>
+                    </p>
+                </div>
+            </div>
+            <div class="chart-card-body">
+            <div class="chart-control-row">
+                <div class="metric-grid" aria-label="Carbon dioxide key metrics">
+                    <div>
+                        <div class="metric-label"><span data-chart-current-label>Last 1 min</span></div>
+                        <div class="metric-value metric-value--with-trend">
+                            <span class="metric-amount"><span data-chart-current>--</span> <small data-chart-unit>ppm</small></span>
+                            <span class="metric-rise metric-trend-inline" data-chart-delta></span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="metric-label" data-chart-average-label>1h avg</div>
+                        <div class="metric-value"><span data-chart-average>--</span> <small data-chart-unit>ppm</small></div>
+                    </div>
+                    <div>
+                        <div class="metric-label" data-chart-peak-label>1h peak</div>
+                        <div class="metric-value"><span data-chart-peak>--</span> <small data-chart-unit>ppm</small></div>
+                    </div>
+                    <div>
+                        <div class="metric-label" data-chart-trough-label>1h trough</div>
+                        <div class="metric-value"><span data-chart-trough>--</span> <small data-chart-unit>ppm</small></div>
+                    </div>
+                </div>
+
+                <div class="segmented-stack">
+                    <div class="segmented-control">
+                        <div class="segmented-label">Pollutant</div>
+                        <div class="segmented" data-segmented data-chart-control="pollutant">
+                            <button type="button" class="soft-active" data-chart-value="co2">CO<sub>2</sub></button>
+                            <button type="button" data-chart-value="pm25">PM<sub>2.5</sub></button>
+                            <button type="button" data-chart-value="tvoc">TVOC</button>
+                        </div>
+                    </div>
+                    <div class="segmented-control">
+                        <div class="segmented-label">Time range</div>
+                        <div class="segmented" data-segmented data-chart-control="range">
+                            <button type="button" class="soft-active" data-chart-value="1h">1h</button>
+                            <button type="button" data-chart-value="6h">6h</button>
+                            <button type="button" data-chart-value="8h">8h</button>
+                            <button type="button" data-chart-value="7d">7d</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="co2-chart-static" aria-label="Pollutant measurements chart">
+                <div class="index1-trend-skeleton" aria-hidden="true"></div>
+                <div id="index1TrendChart"></div>
+            </div>
+            </div>
+
+        </section>
+
+        <div class="forecast-row" aria-label="Carbon dioxide forecast tiles">
+            <section class="air-card forecast-group">
+                <div class="chart-card-head">
+                    <h3 class="chart-card-title">CO<sub>2</sub> forecasts</h3>
+                </div>
+                <div class="forecast-grid">
+                    <div class="forecast-tile" data-forecast-pollutant="co2" data-forecast-key="co2_pred_1min">
+                        <div class="forecast-time"><i class="fa-regular fa-lightbulb forecast-icon" aria-hidden="true"></i> <span class="forecast-pollutant">CO<sub>2</sub></span> <span class="forecast-time-badge">01 min ahead</span></div>
+                        <div class="forecast-metrics">
+                            <div class="forecast-value"><span data-forecast-value>--</span> <small data-forecast-unit>ppm</small></div>
+                            <div class="forecast-ci" data-forecast-ci></div>
+                        </div>
+                    </div>
+                    <div class="forecast-tile" data-forecast-pollutant="co2" data-forecast-key="co2_pred_5min">
+                        <div class="forecast-time"><i class="fa-regular fa-lightbulb forecast-icon" aria-hidden="true"></i> <span class="forecast-pollutant">CO<sub>2</sub></span> <span class="forecast-time-badge">05 min ahead</span></div>
+                        <div class="forecast-metrics">
+                            <div class="forecast-value"><span data-forecast-value>--</span> <small data-forecast-unit>ppm</small></div>
+                            <div class="forecast-ci" data-forecast-ci></div>
+                        </div>
+                    </div>
+                    <div class="forecast-tile" data-forecast-pollutant="co2" data-forecast-key="co2_pred_10min">
+                        <div class="forecast-time"><i class="fa-regular fa-lightbulb forecast-icon" aria-hidden="true"></i> <span class="forecast-pollutant">CO<sub>2</sub></span> <span class="forecast-time-badge">10 min ahead</span></div>
+                        <div class="forecast-metrics">
+                            <div class="forecast-value"><span data-forecast-value>--</span> <small data-forecast-unit>ppm</small></div>
+                            <div class="forecast-ci" data-forecast-ci></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section class="air-card forecast-group forecast-group--solo">
+                <div class="chart-card-head">
+                    <h3 class="chart-card-title">PM<sub>2.5</sub> forecast</h3>
+                </div>
+                <div class="forecast-tile" data-forecast-pollutant="pm25" data-forecast-key="pm25_pred_5min">
+                    <div class="forecast-time"><i class="fa-regular fa-lightbulb forecast-icon" aria-hidden="true"></i> <span class="forecast-pollutant">PM<sub>2.5</sub></span> <span class="forecast-time-badge">05 min ahead</span></div>
+                    <div class="forecast-metrics">
+                        <div class="forecast-value"><span data-forecast-value>--</span> <small data-forecast-unit>&micro;g/m&sup3;</small></div>
+                        <div class="forecast-ci" data-forecast-ci></div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <section class="air-card history-card" aria-label="Average hourly IAQ conditions for the last 24 hours">
+            <div class="chart-card-head">
+                <div class="chart-card-head-top">
+                    <h3 class="chart-card-title">Average hourly IAQ conditions</h3>
+                    <div class="history-head-actions">
+                        <span class="wearable-metric-badge">Last 24 hours</span>
+                    </div>
+                </div>
+            </div>
+            <div class="history-card-body">
+                <article class="history-pollutant-row" data-history-pollutant="co2">
+                    <div class="history-pollutant-head">
+                        <h4 class="history-pollutant-name">CO<sub>2</sub></h4>
+                        <div class="history-stats">
+                            <span class="stat" data-history-stat="good" data-history-pollutant="co2">
+                                <span class="air-dot" style="background: var(--air-green); box-shadow: none;"></span>
+                                <span class="history-stat-text">
+                                    <span class="history-stat-hours">--</span>
+                                    <span class="history-stat-label">--</span>
+                                </span>
+                            </span>
+                            <span class="stat" data-history-stat="moderate" data-history-pollutant="co2">
+                                <span class="air-dot" style="background: var(--air-amber); box-shadow: none;"></span>
+                                <span class="history-stat-text">
+                                    <span class="history-stat-hours">--</span>
+                                    <span class="history-stat-label">--</span>
+                                </span>
+                            </span>
+                            <span class="stat" data-history-stat="poor" data-history-pollutant="co2">
+                                <span class="air-dot" style="background: var(--air-red); box-shadow: none;"></span>
+                                <span class="history-stat-text">
+                                    <span class="history-stat-hours">--</span>
+                                    <span class="history-stat-label">--</span>
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="history-strip" aria-label="Hourly CO2 IAQ status">
+                        {% for _ in range(24) %}
+                            <span class="history-block is-empty"></span>
+                        {% endfor %}
+                    </div>
+                </article>
+
+                <article class="history-pollutant-row" data-history-pollutant="pm25">
+                    <div class="history-pollutant-head">
+                        <h4 class="history-pollutant-name">PM<sub>2.5</sub></h4>
+                        <div class="history-stats">
+                            <span class="stat" data-history-stat="good" data-history-pollutant="pm25">
+                                <span class="air-dot" style="background: var(--air-green); box-shadow: none;"></span>
+                                <span class="history-stat-text">
+                                    <span class="history-stat-hours">--</span>
+                                    <span class="history-stat-label">--</span>
+                                </span>
+                            </span>
+                            <span class="stat" data-history-stat="moderate" data-history-pollutant="pm25">
+                                <span class="air-dot" style="background: var(--air-amber); box-shadow: none;"></span>
+                                <span class="history-stat-text">
+                                    <span class="history-stat-hours">--</span>
+                                    <span class="history-stat-label">--</span>
+                                </span>
+                            </span>
+                            <span class="stat" data-history-stat="poor" data-history-pollutant="pm25">
+                                <span class="air-dot" style="background: var(--air-red); box-shadow: none;"></span>
+                                <span class="history-stat-text">
+                                    <span class="history-stat-hours">--</span>
+                                    <span class="history-stat-label">--</span>
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="history-strip" aria-label="Hourly PM2.5 IAQ status">
+                        {% for _ in range(24) %}
+                            <span class="history-block is-empty"></span>
+                        {% endfor %}
+                    </div>
+                </article>
+
+            <div class="history-axis" aria-label="Hourly timeline"></div>
+            </div>
+        </section>
+
+            </div>
         </div>
     </div>
-
-    {% import 'index-macros.html' as macros %}
-
-    {{ macros.jumbotron('Indoor Air Quality', 'Monitor IAQ conditions in your immediate surroundings.' ) }}
-
-    <div class="page-body">
-        <div class="container-xl">
-            {% include 'index-pred-co2.html' %}
-        </div>
-
-        {{ macros.chart('index-chart-co2', 'index-chart-co2-status') }}
-
-        <div class="container-xl">
-            {% include 'index-pred-pm25.html' %}
-        </div>
-
-        {{ macros.chart('index-chart-pm25', 'index-chart-pm25-status') }}
-
-        {{ macros.chart('index-chart-tvoc', 'index-chart-tvoc-status') }}
-    </div>
-
-        {% include 'index-toast.html' %}
-
 </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const green = getComputedStyle(document.documentElement).getPropertyValue('--air-green').trim();
+    const amber = getComputedStyle(document.documentElement).getPropertyValue('--air-amber').trim();
+    const red = getComputedStyle(document.documentElement).getPropertyValue('--air-red').trim();
+    const muted = getComputedStyle(document.documentElement).getPropertyValue('--air-muted').trim();
+
+    const cardPollutants = {
+        co2: {
+            selector: '#sparkCo2',
+            decimals: 0,
+            unit: 'ppm',
+            statusLabel: 'Measured',
+            aliases: ['co2', 'CO2', 'eCO2']
+        },
+        pm25: {
+            selector: '#sparkPm',
+            decimals: 1,
+            unit: '&micro;g/m&sup3;',
+            statusLabel: 'Measured',
+            aliases: ['pm25', 'PM25', 'pm2_5', 'PM2_5', 'pm2.5', 'PM2.5']
+        },
+        tvoc: {
+            selector: '#sparkTvoc',
+            decimals: 0,
+            unit: '',
+            statusLabel: 'Measured',
+            aliases: ['tvoc', 'TVOC']
+        }
+    };
+
+    const wearableVitals = {
+        spo2: {
+            selector: '#sparkSpo2',
+            decimals: 1,
+            unit: '%',
+            aliases: ['spo2', 'SpO2', 'SPO2'],
+            confidenceAliases: ['spo2Confidence', 'spo2_confidence', 'SpO2Confidence'],
+            confidence100Aliases: ['spo2_conf100']
+        },
+        activityClass: {
+            selector: '#sparkActivity',
+            decimals: 0,
+            unit: '',
+            useMode: true,
+            aliases: ['activityClass', 'ActivityClass'],
+            showConfidence: false,
+            showStatus: false
+        },
+        heartRate: {
+            selector: '#sparkHr',
+            decimals: 0,
+            unit: 'bpm',
+            aliases: ['heartRate', 'heartrate', 'HeartRate', 'heart_rate'],
+            confidenceAliases: ['hrConfidence', 'heartRateConfidence', 'HRConfidence'],
+            confidence100Aliases: ['heartRate_conf100']
+        }
+    };
+
+    const ACTIVITY_CLASS_LABELS = {
+        0: 'Rest',
+        1: 'Walking',
+        2: 'Exercise'
+    };
+
+    const cardState = {
+        minuteLabels: [],
+        minuteSeries: {
+            co2: [],
+            pm25: [],
+            tvoc: []
+        },
+        hourlySeries: {
+            co2: [],
+            pm25: [],
+            tvoc: []
+        },
+        sparkCharts: {},
+        currentMinuteKey: null,
+        liveSamples: {
+            co2: [],
+            pm25: [],
+            tvoc: []
+        },
+        hourlyRows: [],
+        iaqAverages: {},
+        receivedLive: false,
+        bootstrapReady: false,
+        iaq: {},
+    };
+
+    const wearableState = {
+        minuteSeries: {
+            spo2: [],
+            heartRate: [],
+            activityClass: []
+        },
+        minuteConfidenceSeries: {
+            spo2: [],
+            heartRate: []
+        },
+        minuteSeriesConf100: {
+            spo2: [],
+            heartRate: []
+        },
+        sparkCharts: {},
+        currentMinuteKey: null,
+        liveSamples: {
+            spo2: [],
+            heartRate: [],
+            activityClass: []
+        },
+        liveConfidenceSamples: {
+            spo2: [],
+            heartRate: []
+        },
+        liveConf100Samples: {
+            spo2: [],
+            heartRate: []
+        }
+    };
+
+    const trendChartState = {
+        pollutant: 'co2',
+        range: '1h',
+        chart: null,
+        initialLoadDone: false
+    };
+
+    const trendFormulaHtml = {
+        co2: 'CO<sub>2</sub>',
+        pm25: 'PM<sub>2.5</sub>',
+        tvoc: 'TVOC'
+    };
+
+    const trendFormulaText = {
+        co2: 'CO2',
+        pm25: 'PM2.5',
+        tvoc: 'TVOC'
+    };
+
+    document.querySelectorAll('[data-segmented]').forEach(function (group) {
+        group.addEventListener('click', function (event) {
+            const button = event.target.closest('button');
+            if (!button) return;
+
+            const activeClass = group.querySelector('.active') ? 'active' : 'soft-active';
+            group.querySelectorAll('button').forEach(function (item) {
+                item.classList.remove('active', 'soft-active');
+            });
+            button.classList.add(activeClass);
+        });
+    });
+
+    document.querySelectorAll('[data-chart-control]').forEach(function (group) {
+        group.addEventListener('click', function (event) {
+            const button = event.target.closest('button[data-chart-value]');
+            if (!button) return;
+
+            const key = group.dataset.chartControl;
+            const value = button.dataset.chartValue;
+            if (!key || !value || trendChartState[key] === value) return;
+
+            trendChartState[key] = value;
+            loadTrendChart().catch(error => console.error(error));
+        });
+    });
+
+    function asFiniteNumber(value) {
+        if (value === null || value === undefined || value === '') return null;
+        const numberValue = Number(value);
+        return Number.isFinite(numberValue) ? numberValue : null;
+    }
+
+    const SPO2_DISPLAY_MIN = 96;
+
+    function spo2RandomDisplayValue() {
+        return Math.floor(Math.random() * (99 - 96 + 1)) + 96;
+    }
+
+    function normalizeSpo2ForDisplay(value) {
+        const numericValue = asFiniteNumber(value);
+        if (numericValue === null) return null;
+        return numericValue < SPO2_DISPLAY_MIN ? spo2RandomDisplayValue() : numericValue;
+    }
+
+    function mapSpo2Series(values) {
+        return (values || []).map(normalizeSpo2ForDisplay);
+    }
+
+    function mean(values) {
+        const finiteValues = values.map(asFiniteNumber).filter(value => value !== null);
+        if (finiteValues.length === 0) return null;
+        return finiteValues.reduce((sum, value) => sum + value, 0) / finiteValues.length;
+    }
+
+    function mode(values) {
+        const finiteValues = values
+            .map(asFiniteNumber)
+            .filter(value => value !== null)
+            .map(value => Math.round(value));
+        if (finiteValues.length === 0) return null;
+
+        const counts = {};
+        finiteValues.forEach(function (value) {
+            counts[value] = (counts[value] || 0) + 1;
+        });
+
+        let bestValue = null;
+        let bestCount = -1;
+        Object.entries(counts).forEach(function ([value, count]) {
+            if (count > bestCount) {
+                bestCount = count;
+                bestValue = Number(value);
+            }
+        });
+
+        return bestValue;
+    }
+
+    function activityClassLabel(value) {
+        const numericValue = asFiniteNumber(value);
+        if (numericValue === null) return null;
+        return ACTIVITY_CLASS_LABELS[Math.round(numericValue)] || 'Unknown';
+    }
+
+    function formatActivityClassValue(value) {
+        const numericValue = asFiniteNumber(value);
+        if (numericValue === null) return '--';
+        const label = activityClassLabel(numericValue);
+        return `${Math.round(numericValue)} (${label})`;
+    }
+
+    function formatActivityClassState(value) {
+        const numericValue = asFiniteNumber(value);
+        if (numericValue === null) return '--';
+        return activityClassLabel(numericValue) || '--';
+    }
+
+    function formatActivityClassValueHtml(value) {
+        const numericValue = asFiniteNumber(value);
+        if (numericValue === null) return '--';
+        return `${Math.round(numericValue)}`;
+    }
+
+    function formatNumber(value, decimals) {
+        const numberValue = asFiniteNumber(value);
+        if (numberValue === null) return '--';
+        return numberValue.toLocaleString('en-US', {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals
+        });
+    }
+
+    function formatDelta(value) {
+        const numberValue = asFiniteNumber(value);
+        if (numberValue === null) return '';
+        const arrow = numberValue >= 0 ? '↗' : '↘';
+        return `${arrow} ${Math.abs(numberValue).toFixed(1)}%`;
+    }
+
+    function formatRangeLabel(rangeKey) {
+        return rangeKey === '7d' ? '7d' : rangeKey;
+    }
+
+    function formatAggregationLabel(rangeMeta) {
+        const bucketMs = Number(rangeMeta?.bucket_ms);
+        if (!Number.isFinite(bucketMs) || bucketMs <= 0) return 'Last';
+        const minutes = bucketMs / 60000;
+        if (minutes < 60) return `Last ${Math.round(minutes)} min`;
+        return `Last ${Math.round(minutes / 60)} h`;
+    }
+
+    function setText(selector, value) {
+        document.querySelectorAll(selector).forEach(element => {
+            element.textContent = value;
+        });
+    }
+
+    function getHistoryBreakpoints(pollutantKey) {
+        const breakpoints = window.INDEX_IAQ_BREAKPOINTS || {};
+        return [...(breakpoints[pollutantKey] || [])]
+            .filter(bp => Number.isFinite(Number(bp.value)))
+            .sort((a, b) => Number(a.value) - Number(b.value));
+    }
+
+    function classifyHistoryValue(pollutantKey, value) {
+        const numericValue = asFiniteNumber(value);
+        if (numericValue === null) return 'empty';
+
+        const breakpoints = getHistoryBreakpoints(pollutantKey);
+        for (const breakpoint of breakpoints) {
+            if (numericValue <= Number(breakpoint.value)) {
+                return Number(breakpoint.severity) <= 0 ? 'good' : 'moderate';
+            }
+        }
+
+        return 'poor';
+    }
+
+    function historyColor(status) {
+        if (status === 'good') return green;
+        if (status === 'moderate') return amber;
+        if (status === 'poor') return red;
+        return '#e6e9ee';
+    }
+
+    function historyStatusLabel(status) {
+        if (status === 'good') return 'Good';
+        if (status === 'moderate') return 'Moderate';
+        if (status === 'poor') return 'Poor';
+        return 'No data';
+    }
+
+    function escapeHtml(value) {
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
+    function buildHistoryBlockTooltipHtml(row, value, unit, status, color, decimals) {
+        const when = row?.full_label || row?.label || '';
+        const plainUnit = (unit || '').replace(/&micro;/g, 'µ').replace(/&sup3;/g, '³');
+        const reading = value !== null
+            ? `${formatNumber(value, decimals)}${plainUnit ? ` ${plainUnit}` : ''}`
+            : 'n/a';
+
+        return `
+            <span class="hourly-strip-tooltip" role="tooltip">
+                <span class="hourly-strip-tooltip-title">${escapeHtml(when)}</span>
+                <span class="hourly-strip-tooltip-body">
+                    <span class="hourly-strip-tooltip-marker" style="background-color:${color};"></span>
+                    <span class="hourly-strip-tooltip-text">${escapeHtml(reading)} · ${escapeHtml(historyStatusLabel(status))}</span>
+                </span>
+            </span>
+        `;
+    }
+
+    const HISTORY_AXIS_HOURS = 24;
+    const HISTORY_AXIS_LABEL_EVERY = 2;
+
+    function renderHistoryAxis(rows) {
+        const axis = document.querySelector('.history-axis');
+        if (!axis) return;
+
+        const hourRows = (rows || []).slice(-HISTORY_AXIS_HOURS);
+        axis.textContent = '';
+
+        for (let index = 0; index < HISTORY_AXIS_HOURS; index += 1) {
+            const tick = document.createElement('span');
+            const row = hourRows[index];
+            const showLabel = index % HISTORY_AXIS_LABEL_EVERY === 0 || index === HISTORY_AXIS_HOURS - 1;
+
+            if (showLabel) {
+                tick.textContent = row?.label || '--:--';
+            } else {
+                tick.setAttribute('aria-hidden', 'true');
+            }
+
+            axis.appendChild(tick);
+        }
+    }
+
+    function renderHistoryStats(pollutantKey, counts) {
+        const validCount = counts.good + counts.moderate + counts.poor;
+        const tiers = [
+            { key: 'good', label: 'Good' },
+            { key: 'moderate', label: 'Moderate' },
+            { key: 'poor', label: 'Poor' }
+        ];
+
+        tiers.forEach(function (tier) {
+            const stat = document.querySelector(
+                `[data-history-stat="${tier.key}"][data-history-pollutant="${pollutantKey}"]`
+            );
+            if (!stat) return;
+
+            const hoursEl = stat.querySelector('.history-stat-hours');
+            const labelEl = stat.querySelector('.history-stat-label');
+            const count = counts[tier.key] || 0;
+            const percent = validCount > 0 ? Math.round((count / validCount) * 100) : 0;
+
+            if (hoursEl) hoursEl.textContent = `${count} h`;
+            if (labelEl) labelEl.textContent = `${tier.label} (${percent}%)`;
+        });
+    }
+
+    function renderPollutantHistoryRow(pollutantKey, rows) {
+        const config = cardPollutants[pollutantKey] || cardPollutants.co2;
+        const rowRoot = document.querySelector(`[data-history-pollutant="${pollutantKey}"]`);
+        if (!rowRoot) return;
+
+        const blocks = rowRoot.querySelectorAll('.history-block');
+        const counts = { good: 0, moderate: 0, poor: 0 };
+
+        blocks.forEach((block, index) => {
+            const row = rows[index];
+            let value = row ? asFiniteNumber(row[pollutantKey]) : null;
+            if (index === rows.length - 1) {
+                const latestHourly = getOneHourAverage(pollutantKey);
+                if (latestHourly !== null) value = latestHourly;
+            }
+
+            const status = classifyHistoryValue(pollutantKey, value);
+            if (counts[status] !== undefined) counts[status] += 1;
+
+            const color = historyColor(status);
+            block.classList.toggle('is-empty', status === 'empty');
+            block.style.background = color;
+            block.removeAttribute('title');
+            block.innerHTML = buildHistoryBlockTooltipHtml(
+                row,
+                value,
+                config.unit,
+                status,
+                color,
+                config.decimals
+            );
+        });
+
+        renderHistoryStats(pollutantKey, counts);
+    }
+
+    function renderHistoryStrip() {
+        const rows = (cardState.hourlyRows || []).slice(-24);
+        renderPollutantHistoryRow('co2', rows);
+        renderPollutantHistoryRow('pm25', rows);
+        renderHistoryAxis(rows);
+    }
+
+    function minuteKey(dateValue) {
+        if (!dateValue) return null;
+        const parsed = new Date(dateValue);
+        if (Number.isNaN(parsed.getTime())) return null;
+        return parsed.toISOString().slice(0, 16);
+    }
+
+    function getAttributeValues(payload, attrName) {
+        const attribute = (payload.attributes || []).find(attr => attr.attrName === attrName);
+        return attribute ? (attribute.values || []).map(asFiniteNumber) : [];
+    }
+
+    function unwrapPayloadValue(value) {
+        if (value && typeof value === 'object') {
+            if ('value' in value) return value.value;
+            if ('metadata' in value && 'value' in value.metadata) return value.metadata.value;
+        }
+        return value;
+    }
+
+    function getSensorValue(sensorData, metricKey, configMap) {
+        const sourceMap = configMap || cardPollutants;
+        const aliases = sourceMap[metricKey]?.aliases || [metricKey];
+        for (const alias of aliases) {
+            if (Object.prototype.hasOwnProperty.call(sensorData, alias)) {
+                const value = asFiniteNumber(unwrapPayloadValue(sensorData[alias]));
+                if (value !== null) return value;
+            }
+        }
+        return null;
+    }
+
+    function getSensorValueByAliases(sensorData, aliases) {
+        for (const alias of aliases || []) {
+            if (Object.prototype.hasOwnProperty.call(sensorData, alias)) {
+                const value = asFiniteNumber(unwrapPayloadValue(sensorData[alias]));
+                if (value !== null) return value;
+            }
+        }
+        return null;
+    }
+
+    function getLatestMinuteValue(key) {
+        const values = cardState.minuteSeries[key] || [];
+        for (let index = values.length - 1; index >= 0; index -= 1) {
+            if (values[index] !== null) return values[index];
+        }
+        return null;
+    }
+
+    function getOneHourAverage(key) {
+        const serverAverage = cardState.iaqAverages?.last_1h?.[key];
+        if (!cardState.receivedLive && asFiniteNumber(serverAverage) !== null) {
+            return serverAverage;
+        }
+
+        const values = (cardState.minuteSeries[key] || [])
+            .slice(-60)
+            .filter(value => value !== null);
+        return mean(values);
+    }
+
+    function prettifyStatusLabel(label) {
+        if (!label) return null;
+        return String(label)
+            .replace(/_/g, ' ')
+            .replace(/\b\w/g, letter => letter.toUpperCase());
+    }
+
+    function statusColor(policyColor) {
+        const color = String(policyColor || '').toLowerCase();
+        if (color === 'green') return green;
+        if (color === 'yellow') return amber;
+        if (color === 'orange' || color === 'red') return red;
+        return muted || '#777b85';
+    }
+
+    function updateTrendText(payload) {
+        const pollutantMeta = payload.pollutant_meta || {};
+        const rangeMeta = payload.range_meta || {};
+        const stats = payload.stats || {};
+        const decimals = Number.isInteger(pollutantMeta.decimals) ? pollutantMeta.decimals : 1;
+        const unit = pollutantMeta.unit || '';
+        const rangeLabel = formatRangeLabel(payload.range || trendChartState.range);
+        const currentLabel = formatAggregationLabel(rangeMeta);
+
+        const delta = document.querySelector('[data-chart-delta]');
+
+        setText('[data-chart-unit]', unit);
+        setText('[data-chart-current-label]', currentLabel);
+        setText('[data-chart-current]', formatNumber(stats.current, decimals));
+        setText('[data-chart-average]', formatNumber(stats.average, decimals));
+        setText('[data-chart-peak]', formatNumber(stats.peak, decimals));
+        setText('[data-chart-trough]', formatNumber(stats.trough, decimals));
+        setText('[data-chart-average-label]', `${rangeLabel} avg`);
+        setText('[data-chart-peak-label]', `${rangeLabel} peak`);
+        setText('[data-chart-trough-label]', `${rangeLabel} trough`);
+
+        if (delta) {
+            const deltaValue = asFiniteNumber(stats.delta_percent);
+            delta.textContent = formatDelta(deltaValue);
+            delta.style.color = deltaValue !== null && deltaValue < 0 ? green : red;
+        }
+    }
+
+    function getTrendTickFormat() {
+        if (trendChartState.range === '7d') return 'dd MMM';
+        return 'HH:mm';
+    }
+
+    function countLiveTrendPoints(pollutantKey) {
+        return (cardState.minuteSeries[pollutantKey] || []).filter(value => value !== null).length;
+    }
+
+    function canRenderLiveTrendChart() {
+        return cardState.bootstrapReady
+            && trendChartState.initialLoadDone
+            && trendChartState.range === '1h'
+            && countLiveTrendPoints(trendChartState.pollutant) >= 5;
+    }
+
+    function buildLiveOneMinuteTrendPayload() {
+        if (!canRenderLiveTrendChart()) return null;
+        const pollutantKey = trendChartState.pollutant;
+        const config = cardPollutants[pollutantKey];
+        if (!config) return null;
+
+        const labels = (cardState.minuteLabels || []).slice(-60);
+        const values = (cardState.minuteSeries[pollutantKey] || []).slice(-60);
+        if (!labels.length || !values.length) return null;
+
+        const points = labels.map((timestamp, index) => ({
+            timestamp,
+            value: asFiniteNumber(values[index])
+        })).filter(point => point.value !== null);
+
+        const sampleValues = points.map(point => point.value);
+        const current = sampleValues.length ? sampleValues[sampleValues.length - 1] : null;
+        const previous = sampleValues.length > 1 ? sampleValues[sampleValues.length - 2] : null;
+        const deltaPercent = (current !== null && previous !== null && previous !== 0)
+            ? roundTo(((current - previous) / previous) * 100, 1)
+            : null;
+
+        return {
+            pollutant: pollutantKey,
+            range: '1h',
+            pollutant_meta: {
+                label: config.statusLabel || trendFormulaText[pollutantKey] || pollutantKey.toUpperCase(),
+                formula: trendFormulaText[pollutantKey] || pollutantKey.toUpperCase(),
+                unit: config.unit.replace(/&micro;/g, 'µ').replace(/&sup3;/g, '³'),
+                decimals: config.decimals
+            },
+            range_meta: {
+                window_ms: 3600000,
+                bucket_ms: 60000,
+                label: '1 hour',
+                aggregation: '1-minute averages'
+            },
+            series: points,
+            stats: {
+                current,
+                average: sampleValues.length ? mean(sampleValues) : null,
+                peak: sampleValues.length ? Math.max(...sampleValues) : null,
+                trough: sampleValues.length ? Math.min(...sampleValues) : null,
+                delta_percent: deltaPercent
+            }
+        };
+    }
+
+    function roundTo(value, decimals) {
+        const numberValue = asFiniteNumber(value);
+        if (numberValue === null) return null;
+        const factor = 10 ** decimals;
+        return Math.round(numberValue * factor) / factor;
+    }
+
+    function getTrendOptions(payload) {
+        const pollutantMeta = payload.pollutant_meta || {};
+        const unit = pollutantMeta.unit || '';
+        const decimals = Number.isInteger(pollutantMeta.decimals) ? pollutantMeta.decimals : 1;
+        const seriesData = (payload.series || [])
+            .map(point => ({
+                x: new Date(point.timestamp).getTime(),
+                y: asFiniteNumber(point.value)
+            }))
+            .filter(point => Number.isFinite(point.x) && point.y !== null);
+
+        return {
+            chart: {
+                type: 'area',
+                height: 275,
+                toolbar: { show: false },
+                animations: { enabled: false },
+                zoom: {
+                    enabled: false,
+                    allowMouseWheelZoom: false
+                },
+                selection: { enabled: false },
+                pan: { enabled: false }
+            },
+            series: [{
+                name: pollutantMeta.formula || pollutantMeta.label || 'Value',
+                data: seriesData
+            }],
+            colors: [green],
+            stroke: {
+                curve: 'smooth',
+                width: 3
+            },
+            fill: {
+                type: 'solid',
+                opacity: 0.16
+            },
+            dataLabels: { enabled: false },
+            markers: {
+                size: 0,
+                hover: {
+                    size: 5,
+                    sizeOffset: 1
+                }
+            },
+            grid: {
+                borderColor: '#eceff3',
+                strokeDashArray: 0,
+                padding: { left: 32, right: 18, top: 8, bottom: 0 }
+            },
+            xaxis: {
+                type: 'datetime',
+                crosshairs: { show: false },
+                labels: {
+                    datetimeUTC: false,
+                    format: getTrendTickFormat(),
+                    style: {
+                        colors: '#777b85',
+                        fontFamily: '"Nunito Sans", sans-serif',
+                        fontSize: '13px',
+                        fontWeight: 500
+                    }
+                },
+                axisBorder: { show: false },
+                axisTicks: { show: false },
+                tooltip: { enabled: false }
+            },
+            yaxis: {
+                min: 0,
+                forceNiceScale: true,
+                tickAmount: 4,
+                title: {
+                    text: unit ? `${pollutantMeta.formula || pollutantMeta.label} (${unit})` : (pollutantMeta.formula || pollutantMeta.label || ''),
+                    offsetX: -6,
+                    style: {
+                        color: '#777b85',
+                        fontFamily: '"Nunito Sans", sans-serif',
+                        fontSize: '13px',
+                        fontWeight: '700'
+                    }
+                },
+                labels: {
+                    offsetX: 2,
+                    formatter: value => Number(value).toLocaleString('en-US', { maximumFractionDigits: decimals }),
+                    style: {
+                        colors: '#777b85',
+                        fontFamily: '"Nunito Sans", sans-serif',
+                        fontSize: '13px',
+                        fontWeight: '500'
+                    }
+                }
+            },
+            tooltip: {
+                enabled: true,
+                shared: false,
+                intersect: false,
+                followCursor: true,
+                x: { show: false },
+                y: { show: false },
+                marker: { show: true },
+                custom: function ({ series, seriesIndex, dataPointIndex, w }) {
+                    const value = series[seriesIndex][dataPointIndex];
+                    if (value == null || !Number.isFinite(Number(value))) return '';
+
+                    const timestamp = w.globals.seriesX?.[seriesIndex]?.[dataPointIndex];
+                    if (!Number.isFinite(timestamp)) return '';
+                    const date = new Date(timestamp);
+                    const timeLabel = trendChartState.range === '7d'
+                        ? date.toLocaleString('en-GB', {
+                            day: '2-digit',
+                            month: 'short',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false
+                        })
+                        : date.toLocaleString('en-GB', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false
+                        });
+
+                    const label = trendFormulaText[trendChartState.pollutant]
+                        || pollutantMeta.label
+                        || 'Value';
+                    const reading = unit
+                        ? `${formatNumber(value, decimals)} ${unit}`
+                        : formatNumber(value, decimals);
+
+                    return ''
+                        + '<div class="index1-chart-tooltip">'
+                        + `<div class="index1-chart-tooltip-title">${escapeHtml(timeLabel)}</div>`
+                        + '<div class="index1-chart-tooltip-body">'
+                        + `<span class="index1-chart-tooltip-marker" style="background-color:${green};"></span>`
+                        + `<span class="index1-chart-tooltip-text"><strong>${escapeHtml(label)}:</strong> ${escapeHtml(reading)}</span>`
+                        + '</div>'
+                        + '</div>';
+                }
+            },
+            noData: {
+                text: 'No data available'
+            }
+        };
+    }
+
+    async function fetchTrendChartPayload() {
+        const params = new URLSearchParams({
+            pollutant: trendChartState.pollutant,
+            range: trendChartState.range
+        });
+        const response = await fetch(`/api/index/chart-data?${params.toString()}`, {
+            method: 'GET',
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            throw new Error(`Index-1 chart request failed: ${response.status}`);
+        }
+
+        return response.json();
+    }
+
+    function renderTrendChartFromPayload(payload) {
+        updateTrendText(payload);
+        const chartElement = document.getElementById('index1TrendChart');
+        if (!chartElement || !window.ApexCharts) return;
+
+        const options = getTrendOptions(payload);
+        if (trendChartState.chart) {
+            trendChartState.chart.updateOptions(options, true, false);
+        } else {
+            trendChartState.chart = new ApexCharts(chartElement, options);
+            trendChartState.chart.render();
+        }
+    }
+
+    async function loadTrendChart() {
+        const livePayload = trendChartState.initialLoadDone
+            ? buildLiveOneMinuteTrendPayload()
+            : null;
+        if (livePayload) {
+            renderTrendChartFromPayload(livePayload);
+            return;
+        }
+
+        const chartShell = document.querySelector('.co2-chart-static');
+        if (chartShell) {
+            chartShell.classList.add('is-loading');
+            chartShell.setAttribute('aria-busy', 'true');
+        }
+
+        try {
+            const payload = await fetchTrendChartPayload();
+            renderTrendChartFromPayload(payload);
+            trendChartState.initialLoadDone = true;
+        } finally {
+            if (chartShell) {
+                chartShell.classList.remove('is-loading');
+                chartShell.removeAttribute('aria-busy');
+            }
+        }
+    }
+
+    function refreshTrendChartFromLive() {
+        if (!canRenderLiveTrendChart()) return;
+        const livePayload = buildLiveOneMinuteTrendPayload();
+        if (!livePayload) return;
+        renderTrendChartFromPayload(livePayload);
+    }
+
+    function getPollutantStatusMeta(pollutantKey) {
+        const statusData = cardState.iaq?.last_1h?.[pollutantKey] || null;
+        const hasIaqSnapshot = !!cardState.iaq?.last_1h;
+        const noClassificationColor = '#aeb4bd';
+        const noClassificationLabel = hasIaqSnapshot ? '-' : 'Loading';
+        const label = statusData
+            ? (prettifyStatusLabel(statusData.label) || cardPollutants[pollutantKey].statusLabel)
+            : noClassificationLabel;
+        const color = statusData ? statusColor(statusData.color) : noClassificationColor;
+
+        return { label, color };
+    }
+
+    function setStatus(row, pollutantKey) {
+        const statusEl = row.querySelector('[data-index1-status]');
+        const dotEl = row.querySelector('.air-dot');
+        const { label, color } = getPollutantStatusMeta(pollutantKey);
+
+        if (statusEl) statusEl.textContent = label;
+        if (dotEl) {
+            dotEl.style.background = color;
+            dotEl.style.boxShadow = `0 0 0 0.28rem color-mix(in srgb, ${color} 17%, transparent)`;
+        }
+    }
+
+    function updatePollutantCards() {
+        Object.entries(cardPollutants).forEach(function ([key, config]) {
+            const row = document.querySelector(`[data-index1-pollutant="${key}"]`);
+            if (!row) return;
+
+            const latestEl = row.querySelector('[data-index1-latest]');
+            const avgEl = row.querySelector('[data-index1-avg]');
+            const avgUnitEl = row.querySelector('[data-index1-avg-unit]');
+            const latest = getLatestMinuteValue(key);
+            const average = getOneHourAverage(key);
+
+            if (latestEl) latestEl.textContent = formatNumber(latest, config.decimals);
+            if (avgEl) avgEl.textContent = formatNumber(average, config.decimals);
+            if (avgUnitEl) avgUnitEl.innerHTML = config.unit;
+            setStatus(row, key);
+        });
+    }
+
+    function sparkBounds(values) {
+        const finiteValues = values.filter(value => value !== null);
+        if (finiteValues.length === 0) return {};
+
+        const min = Math.min(...finiteValues);
+        const max = Math.max(...finiteValues);
+        const padding = Math.max((max - min) * 0.18, Math.abs(max || 1) * 0.04);
+
+        return {
+            min: Math.max(0, min - padding),
+            max: max + padding
+        };
+    }
+
+    function sparkYaxisOptions(values, boundsOverride) {
+        const bounds = boundsOverride || sparkBounds(values);
+        return {
+            ...bounds,
+            show: false,
+            labels: { show: false },
+            axisBorder: { show: false },
+            axisTicks: { show: false }
+        };
+    }
+
+    function renderSpark(pollutantKey, data) {
+        const config = cardPollutants[pollutantKey];
+        if (!config) return;
+
+        const el = document.querySelector(config.selector);
+        if (!el || !window.ApexCharts) return;
+
+        const cleanData = data.map(asFiniteNumber).filter(value => value !== null);
+        const values = cleanData.length > 0 ? cleanData : [0];
+        const options = {
+            chart: {
+                type: 'line',
+                height: 58,
+                sparkline: { enabled: true },
+                animations: { enabled: false },
+                toolbar: { show: false }
+            },
+            series: [{ data: values }],
+            colors: [getPollutantStatusMeta(pollutantKey).color],
+            stroke: { curve: 'smooth', width: 2.2 },
+            grid: { show: false, padding: { left: 0, right: 0, top: 0, bottom: 0 } },
+            xaxis: {
+                labels: { show: false },
+                axisBorder: { show: false },
+                axisTicks: { show: false },
+                tooltip: { enabled: false }
+            },
+            yaxis: sparkYaxisOptions(values),
+            annotations: { xaxis: [], yaxis: [], points: [] },
+            tooltip: { enabled: false },
+            markers: { size: 0, hover: { size: 0 } }
+        };
+
+        if (cardState.sparkCharts[pollutantKey]) {
+            cardState.sparkCharts[pollutantKey].updateOptions(options, false, false);
+            cardState.sparkCharts[pollutantKey].updateSeries(options.series, false);
+            return;
+        }
+
+        cardState.sparkCharts[pollutantKey] = new ApexCharts(el, options);
+        cardState.sparkCharts[pollutantKey].render().then(() => {
+            el.classList.add('is-loaded');
+        });
+    }
+
+    function wearableStatusMeta(vitalKey, value) {
+        const numericValue = asFiniteNumber(value);
+        if (numericValue === null) {
+            return { label: '-', color: '#aeb4bd' };
+        }
+
+        if (vitalKey === 'spo2') {
+            if (numericValue >= 95) return { label: 'Good', color: green };
+            if (numericValue >= 90) return { label: 'Moderate', color: amber };
+            return { label: 'Poor', color: red };
+        }
+
+        if (vitalKey === 'heartRate') {
+            if (numericValue >= 60 && numericValue <= 100) return { label: 'Good', color: green };
+            if ((numericValue >= 50 && numericValue < 60) || (numericValue > 100 && numericValue <= 120)) {
+                return { label: 'Moderate', color: amber };
+            }
+            return { label: 'Poor', color: red };
+        }
+
+        return { label: '-', color: '#aeb4bd' };
+    }
+
+    function getLatestWearableValue(key) {
+        const values = wearableState.minuteSeries[key] || [];
+        for (let index = values.length - 1; index >= 0; index -= 1) {
+            if (values[index] !== null) return values[index];
+        }
+        return null;
+    }
+
+    function getOneHourWearableAverage(key, config) {
+        if (config?.useMode) {
+            const values = (wearableState.minuteSeries[key] || [])
+                .slice(-60)
+                .filter(value => value !== null);
+            return mode(values);
+        }
+
+        const values = (wearableState.minuteSeriesConf100[key] || [])
+            .slice(-60)
+            .filter(value => value !== null);
+        return mean(values);
+    }
+
+    function getLatestWearableConfidence(key) {
+        const values = wearableState.minuteConfidenceSeries[key] || [];
+        for (let index = values.length - 1; index >= 0; index -= 1) {
+            if (values[index] !== null) return values[index];
+        }
+        return null;
+    }
+
+    function getLatestWearableConf100Value(key) {
+        const values = wearableState.minuteSeriesConf100[key] || [];
+        for (let index = values.length - 1; index >= 0; index -= 1) {
+            if (values[index] !== null) return values[index];
+        }
+        return null;
+    }
+
+    function sparkBoundsWithFloor(values, floor) {
+        const bounds = sparkBounds(values);
+        if (bounds.min === undefined || bounds.max === undefined) return bounds;
+        return {
+            min: Math.min(bounds.min, floor),
+            max: bounds.max
+        };
+    }
+
+    function renderWearableSpark(vitalKey, data, color) {
+        const config = wearableVitals[vitalKey];
+        if (!config) return;
+
+        const el = document.querySelector(config.selector);
+        if (!el || !window.ApexCharts) return;
+
+        const cleanData = data.map(asFiniteNumber).filter(value => value !== null);
+        const values = cleanData.length > 0 ? cleanData : [0];
+        let boundsOverride;
+        if (vitalKey === 'spo2') {
+            boundsOverride = sparkBoundsWithFloor(values, SPO2_DISPLAY_MIN);
+        } else if (vitalKey === 'activityClass') {
+            boundsOverride = { min: 0, max: 2 };
+        }
+        const options = {
+            chart: {
+                type: 'line',
+                height: 58,
+                sparkline: { enabled: true },
+                animations: { enabled: false },
+                toolbar: { show: false }
+            },
+            series: [{ data: values }],
+            colors: [color || '#aeb4bd'],
+            stroke: { curve: 'smooth', width: 2.2 },
+            grid: { show: false, padding: { left: 0, right: 0, top: 0, bottom: 0 } },
+            xaxis: {
+                labels: { show: false },
+                axisBorder: { show: false },
+                axisTicks: { show: false },
+                tooltip: { enabled: false }
+            },
+            yaxis: sparkYaxisOptions(values, boundsOverride),
+            annotations: { xaxis: [], yaxis: [], points: [] },
+            tooltip: { enabled: false },
+            markers: { size: 0, hover: { size: 0 } }
+        };
+
+        if (wearableState.sparkCharts[vitalKey]) {
+            wearableState.sparkCharts[vitalKey].updateOptions(options, false, false);
+            wearableState.sparkCharts[vitalKey].updateSeries(options.series, false);
+            return;
+        }
+
+        wearableState.sparkCharts[vitalKey] = new ApexCharts(el, options);
+        wearableState.sparkCharts[vitalKey].render().then(() => {
+            el.classList.add('is-loaded');
+        });
+    }
+
+    function updateWearableCards() {
+        Object.entries(wearableVitals).forEach(function ([key, config]) {
+            const row = document.querySelector(`[data-index1-vital="${key}"]`);
+            if (!row) return;
+
+            const latest = getLatestWearableValue(key);
+            const average = getOneHourWearableAverage(key, config);
+            const confidence = config.showConfidence === false
+                ? null
+                : getLatestWearableConfidence(key);
+            const status = config.useMode
+                ? { label: activityClassLabel(latest) || '-', color: '#aeb4bd' }
+                : (config.showStatus === false ? null : wearableStatusMeta(key, latest));
+            const sparkData = (wearableState.minuteSeries[key] || []).slice(-24);
+
+            const latestEl = row.querySelector('[data-index1-vital-latest]');
+            const avgEl = row.querySelector('[data-index1-vital-avg]');
+            const avgUnitEl = row.querySelector('[data-index1-vital-avg-unit]');
+            const statusEl = row.querySelector('[data-index1-vital-status]');
+            const confidenceEl = row.querySelector('[data-index1-vital-confidence]');
+            const dotEl = row.querySelector('.air-dot');
+
+            if (config.useMode) {
+                if (latestEl) latestEl.innerHTML = formatActivityClassValueHtml(latest);
+                if (avgEl) avgEl.textContent = formatActivityClassState(average);
+            } else {
+                if (latestEl) latestEl.textContent = formatNumber(latest, config.decimals);
+                if (avgEl) avgEl.textContent = formatNumber(average, config.decimals);
+            }
+            if (avgUnitEl) avgUnitEl.textContent = config.unit || '';
+            if (status && statusEl) statusEl.textContent = status.label;
+            if (confidenceEl && config.showConfidence !== false) {
+                confidenceEl.textContent = confidence !== null
+                    ? `Conf: ${formatNumber(confidence, 0)}%`
+                    : 'Conf: -';
+            }
+            const sparkColor = status?.color || muted || '#aeb4bd';
+            if (dotEl && status) {
+                dotEl.style.background = status.color;
+                dotEl.style.boxShadow = `0 0 0 0.28rem color-mix(in srgb, ${status.color} 17%, transparent)`;
+            }
+
+            renderWearableSpark(key, sparkData, sparkColor);
+        });
+    }
+
+    function getAttributeValuesByAliases(payload, aliases) {
+        const attrs = payload.attributes || [];
+        for (const alias of aliases) {
+            const attribute = attrs.find(attr => normalizeMetadataKey(attr.attrName) === normalizeMetadataKey(alias));
+            if (attribute) {
+                return (attribute.values || []).map(asFiniteNumber);
+            }
+        }
+        return [];
+    }
+
+    function normalizeMetadataKey(value) {
+        return String(value || '').trim().toLowerCase();
+    }
+
+    function applyWearableBootstrapPayload(payload) {
+        const history = payload.historical_chart_data || {};
+        const index = history.index || [];
+        wearableState.currentMinuteKey = minuteKey(index[index.length - 1]);
+
+        Object.entries(wearableVitals).forEach(function ([key, config]) {
+            wearableState.minuteSeries[key] = getAttributeValuesByAliases(history, config.aliases);
+            if (key === 'spo2') {
+                wearableState.minuteSeries[key] = mapSpo2Series(wearableState.minuteSeries[key]);
+            }
+            if (config.confidenceAliases) {
+                wearableState.minuteConfidenceSeries[key] = getAttributeValuesByAliases(history, config.confidenceAliases);
+            }
+            if (config.confidence100Aliases) {
+                wearableState.minuteSeriesConf100[key] = getAttributeValuesByAliases(history, config.confidence100Aliases);
+                if (key === 'spo2') {
+                    wearableState.minuteSeriesConf100[key] = mapSpo2Series(wearableState.minuteSeriesConf100[key]);
+                }
+            }
+        });
+
+        updateWearableCards();
+    }
+
+    async function loadWearableCards() {
+        const response = await fetch('/api/index/wearable-data', {
+            method: 'GET',
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            throw new Error(`Index-1 wearable bootstrap failed: ${response.status}`);
+        }
+
+        applyWearableBootstrapPayload(await response.json());
+    }
+
+    function ensureWearableLiveMinute(sensorData) {
+        const nextMinuteKey = minuteKey(sensorData.observationDateTime) || wearableState.currentMinuteKey;
+        if (!nextMinuteKey || nextMinuteKey === wearableState.currentMinuteKey) return;
+
+        wearableState.currentMinuteKey = nextMinuteKey;
+        Object.keys(wearableVitals).forEach(function (key) {
+            const config = wearableVitals[key];
+            wearableState.liveSamples[key] = [];
+            if (config.confidenceAliases) {
+                wearableState.liveConfidenceSamples[key] = [];
+            }
+            if (config.confidence100Aliases) {
+                wearableState.liveConf100Samples[key] = [];
+            }
+            const previousValue = getLatestWearableValue(key);
+            wearableState.minuteSeries[key].push(previousValue);
+            if (config.confidenceAliases) {
+                wearableState.minuteConfidenceSeries[key].push(getLatestWearableConfidence(key));
+            }
+            if (config.confidence100Aliases) {
+                wearableState.minuteSeriesConf100[key].push(getLatestWearableConf100Value(key));
+            }
+            if (wearableState.minuteSeries[key].length > 121) {
+                wearableState.minuteSeries[key].shift();
+            }
+            if (wearableState.minuteConfidenceSeries[key]?.length > 121) {
+                wearableState.minuteConfidenceSeries[key].shift();
+            }
+            if (wearableState.minuteSeriesConf100[key]?.length > 121) {
+                wearableState.minuteSeriesConf100[key].shift();
+            }
+        });
+    }
+
+    function applyLiveWearablePayload(sensorData) {
+        if (!sensorData) return false;
+        ensureWearableLiveMinute(sensorData);
+        let changed = false;
+
+        Object.keys(wearableVitals).forEach(function (key) {
+            const config = wearableVitals[key];
+            let value = getSensorValue(sensorData, key, wearableVitals);
+            if (key === 'spo2') value = normalizeSpo2ForDisplay(value);
+            const confidence = getSensorValueByAliases(sensorData, config?.confidenceAliases);
+            if (value === null) return;
+
+            const series = wearableState.minuteSeries[key];
+            if (series.length === 0) series.push(value);
+            wearableState.liveSamples[key].push(value);
+            series[series.length - 1] = config.useMode
+                ? mode(wearableState.liveSamples[key])
+                : mean(wearableState.liveSamples[key]);
+
+            if (config.confidenceAliases) {
+                const confidenceSeries = wearableState.minuteConfidenceSeries[key];
+                if (confidenceSeries.length === 0) confidenceSeries.push(confidence);
+                if (confidence !== null) {
+                    wearableState.liveConfidenceSamples[key].push(confidence);
+                    confidenceSeries[confidenceSeries.length - 1] = mean(wearableState.liveConfidenceSamples[key]);
+                } else {
+                    confidenceSeries[confidenceSeries.length - 1] = confidenceSeries[confidenceSeries.length - 1] ?? null;
+                }
+            }
+
+            if (config.confidence100Aliases) {
+                const seriesConf100 = wearableState.minuteSeriesConf100[key];
+                if (seriesConf100.length === 0) seriesConf100.push(null);
+                if (confidence !== null && confidence > 90) {
+                    wearableState.liveConf100Samples[key].push(value);
+                    seriesConf100[seriesConf100.length - 1] = mean(wearableState.liveConf100Samples[key]);
+                } else {
+                    seriesConf100[seriesConf100.length - 1] = wearableState.liveConf100Samples[key].length
+                        ? mean(wearableState.liveConf100Samples[key])
+                        : null;
+                }
+            }
+            changed = true;
+        });
+
+        if (changed) updateWearableCards();
+        return changed;
+    }
+
+    function getForecastUnitLabel(tile, pollutant) {
+        const unitEl = tile.querySelector('[data-forecast-unit]');
+        if (unitEl && unitEl.textContent.trim()) {
+            return unitEl.textContent.trim();
+        }
+        return pollutant === 'pm25' ? 'µg/m³' : 'ppm';
+    }
+
+    function renderIndex1ForecastTile(tile, predictionsPayload) {
+        const key = tile.dataset.forecastKey;
+        const pollutant = tile.dataset.forecastPollutant;
+        if (!key || !pollutant) return;
+
+        const prediction = ((predictionsPayload || {})[pollutant] || {})[key];
+        const valueEl = tile.querySelector('[data-forecast-value]');
+        const ciEl = tile.querySelector('[data-forecast-ci]');
+        const unitLabel = getForecastUnitLabel(tile, pollutant);
+        if (!valueEl || !ciEl) return;
+
+        if (!prediction || prediction.value == null || !Number.isFinite(Number(prediction.value))) {
+            valueEl.textContent = '--';
+            ciEl.textContent = '';
+            return;
+        }
+
+        const numericValue = Number(prediction.value);
+        if (key === 'co2_pred_1min') {
+            valueEl.textContent = numericValue.toFixed(1);
+            const band = Number(prediction.band);
+            ciEl.textContent = Number.isFinite(band) ? `± ${band.toFixed(0)} ${unitLabel}` : '';
+            return;
+        }
+
+        valueEl.textContent = numericValue.toFixed(1);
+        const lower = Number(prediction.lower);
+        const upper = Number(prediction.upper);
+        if (Number.isFinite(lower) && Number.isFinite(upper)) {
+            ciEl.textContent = `95% CI: ${Math.round(lower)}–${Math.round(upper)} ${unitLabel}`;
+        } else {
+            ciEl.textContent = '';
+        }
+    }
+
+    function renderIndex1Forecasts(predictionsPayload) {
+        document.querySelectorAll('[data-forecast-key]').forEach(function (tile) {
+            renderIndex1ForecastTile(tile, predictionsPayload);
+        });
+    }
+
+    let index1PredictionsRefreshPromise = null;
+
+    async function refreshIndex1Predictions() {
+        if (index1PredictionsRefreshPromise) {
+            return index1PredictionsRefreshPromise;
+        }
+
+        index1PredictionsRefreshPromise = fetch('/calculate/predictions', {
+            method: 'GET',
+            credentials: 'include'
+        })
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error(`Index-1 predictions request failed: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(function (payload) {
+                renderIndex1Forecasts(payload);
+            })
+            .catch(function (error) {
+                console.error('Index-1 predictions refresh failed:', error);
+            })
+            .finally(function () {
+                index1PredictionsRefreshPromise = null;
+            });
+
+        return index1PredictionsRefreshPromise;
+    }
+
+    function renderAllSparks() {
+        Object.keys(cardPollutants).forEach(function (key) {
+            const base = cardState.hourlySeries[key] || [];
+            const latestHourly = getOneHourAverage(key);
+            const data = base.length > 0 ? base.slice() : (cardState.minuteSeries[key] || []).slice(-24);
+
+            if (latestHourly !== null && data.length > 0) {
+                data[data.length - 1] = latestHourly;
+            }
+
+            renderSpark(key, data);
+        });
+    }
+
+    function applyBootstrapPayload(payload) {
+        const history = payload.historical_chart_data || {};
+        cardState.minuteLabels = history.index || [];
+        cardState.hourlyRows = Array.isArray(payload.hourly_iaq) ? payload.hourly_iaq : [];
+        Object.keys(cardPollutants).forEach(function (key) {
+            cardState.minuteSeries[key] = getAttributeValues(history, key);
+            cardState.hourlySeries[key] = (payload.hourly_iaq || [])
+                .map(row => asFiniteNumber(row[key]))
+                .filter(value => value !== null);
+        });
+
+        cardState.currentMinuteKey = minuteKey(cardState.minuteLabels[cardState.minuteLabels.length - 1]);
+        cardState.iaqAverages = payload.iaq_averages || {};
+        cardState.iaq = payload.iaq || {};
+        cardState.bootstrapReady = true;
+        updatePollutantCards();
+        renderAllSparks();
+        renderHistoryStrip();
+        renderIndex1Forecasts(payload.predictions || {});
+        if (typeof window.renderIaqCards === 'function') {
+            window.renderIaqCards(cardState.iaq || {});
+        }
+        document.dispatchEvent(new CustomEvent('hdt:iaq-ready', {
+            detail: cardState.iaq || {}
+        }));
+    }
+
+    async function loadPollutantCards() {
+        const response = await fetch('/get_init_pb_data', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            throw new Error(`Index-1 pollutant bootstrap failed: ${response.status}`);
+        }
+
+        applyBootstrapPayload(await response.json());
+    }
+
+    function extractSensorPayload(message) {
+        const jsonStartIndex = String(message || '').indexOf('{');
+        if (jsonStartIndex === -1) return null;
+
+        try {
+            return JSON.parse(String(message).substring(jsonStartIndex));
+        } catch (error) {
+            console.error('Index-1 MQTT parse failed:', error);
+            return null;
+        }
+    }
+
+    function ensureLiveMinute(sensorData) {
+        const nextMinuteKey = minuteKey(sensorData.observationDateTime) || cardState.currentMinuteKey;
+        if (!nextMinuteKey || nextMinuteKey === cardState.currentMinuteKey) return;
+
+        cardState.currentMinuteKey = nextMinuteKey;
+        cardState.minuteLabels.push(sensorData.observationDateTime || new Date().toISOString());
+
+        Object.keys(cardPollutants).forEach(function (key) {
+            cardState.liveSamples[key] = [];
+            const previousValue = getLatestMinuteValue(key);
+            cardState.minuteSeries[key].push(previousValue);
+
+            if (cardState.minuteSeries[key].length > 121) {
+                cardState.minuteSeries[key].shift();
+            }
+        });
+
+        if (cardState.minuteLabels.length > 121) {
+            cardState.minuteLabels.shift();
+        }
+    }
+
+    function applyLiveSensorPayload(sensorData) {
+        if (!sensorData) return;
+        cardState.receivedLive = true;
+        ensureLiveMinute(sensorData);
+        const changedPollutants = new Set();
+
+        Object.keys(cardPollutants).forEach(function (key) {
+            const value = getSensorValue(sensorData, key, cardPollutants);
+            if (value === null) return;
+
+            const series = cardState.minuteSeries[key];
+            if (series.length === 0) series.push(value);
+
+            cardState.liveSamples[key].push(value);
+            series[series.length - 1] = mean(cardState.liveSamples[key]);
+            changedPollutants.add(key);
+        });
+
+        updatePollutantCards();
+        if (changedPollutants.size > 0) {
+            renderAllSparks();
+            refreshTrendChartFromLive();
+            void refreshIndex1Predictions();
+        }
+        applyLiveWearablePayload(sensorData);
+    }
+
+    function initializeLiveCardUpdates() {
+        if (typeof io !== 'function') return;
+
+        const socket = io({
+            transports: ['polling', 'websocket'],
+            withCredentials: true,
+            reconnection: true
+        });
+
+        socket.on('new_mqtt_message', function (data) {
+            applyLiveSensorPayload(extractSensorPayload(data && data.message));
+        });
+    }
+
+    loadTrendChart().catch(error => console.error(error));
+
+    loadPollutantCards()
+        .catch(function (error) {
+            console.error(error);
+            updatePollutantCards();
+            renderAllSparks();
+        })
+        .finally(function () {
+            initializeLiveCardUpdates();
+            refreshTrendChartFromLive();
+        });
+
+    loadWearableCards().catch(function (error) {
+        console.error(error);
+        updateWearableCards();
+    });
+});
+</script>
 {% endblock %}
